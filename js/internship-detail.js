@@ -277,6 +277,23 @@ if (favBtn) {
 // Hide Apply buttons for company users
         hideApplyButtonForCompanies();
 
+        // Disable Apply button and show banner if position is no longer active
+        if (position.status && position.status !== 'active') {
+            const applyBtn = document.getElementById('applyBtn');
+            if (applyBtn) {
+                applyBtn.textContent = '🔒 Position Closed';
+                applyBtn.disabled = true;
+                applyBtn.style.background = '#9ca3af';
+                applyBtn.style.cursor = 'not-allowed';
+                applyBtn.style.opacity = '0.8';
+                applyBtn.onclick = null;
+            }
+            const statusBadge = document.getElementById('badgeStatus');
+            if (statusBadge) statusBadge.style.display = '';
+            const banner = document.getElementById('closedBanner');
+            if (banner) banner.style.display = '';
+        }
+
         // Show the application sidebar only if the current user is the company owner
         let isOwner = false;
         if (position.company_id) {

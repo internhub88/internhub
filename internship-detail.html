@@ -92,6 +92,7 @@
                     <span id="badgeSalary" class="badge badge-success">Salary</span>
                     <span id="applicationCountBadge" class="badge" style="background:#f3f4f6; color:#374151;">👥 Loading...</span>
                     <span id="badgePublished" class="badge date-published"></span>
+                    <span id="badgeStatus" class="badge status-closed" style="display:none;">🔒 Position Closed</span>
                   </div>
                 </div>
                 <div id="favBtnContainer" data-job-id="">
@@ -100,6 +101,11 @@
                   </button>
                 </div>
               </div>
+            </div>
+
+            <!-- Closed position banner (shown only when status != active) -->
+            <div id="closedBanner" style="display:none; margin: 1rem 1.5rem 0; padding: 0.75rem 1rem; background:#fee2e2; color:#991b1b; border-radius:6px; font-size:0.9rem; font-weight:600;">
+              ⚠️ This position has been closed and is no longer accepting applications.
             </div>
 
             <!-- Job Overview -->

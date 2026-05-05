@@ -71,7 +71,7 @@ async function loadFavorites() {
   const positionIds = unapplied.map(f => Number(f.internship_id)).filter(Boolean);
   const { data: positions, error: posError } = await supabaseClient
     .from('positions')
-    .select('position_id, title, company_id, period_start, period_end, is_open_ended')
+    .select('position_id, title, company_id, period_start, period_end, is_open_ended, status')
     .in('position_id', positionIds);
 
   if (posError) {
@@ -128,10 +128,11 @@ async function loadFavorites() {
       periodText = `${start} – ${end}`;
     }
 
+    const isClosed = pos.status && pos.status !== 'active';
     return `
-      <div class="fav-item" id="fav-${fav.id}">
+      <div class="fav-item" id="fav-${fav.id}" ${isClosed ? 'style="opacity:0.75;"' : ''}>
         <div class="fav-item-info">
-          <a href="internship-detail.html?id=${fav.internship_id}">${pos.title}</a>
+          <a href="internship-detail.html?id=${fav.internship_id}" ${isClosed ? 'style="color:#9ca3af;"' : ''}>${pos.title}${isClosed ? ' <span style="font-size:0.7rem;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:4px;vertical-align:middle;font-weight:600;">Closed</span>' : ''}</a>
           <span>${companyName}${city ? ' · ' + city : ''}${periodText ? ' · ' + periodText : ''}</span>
         </div>
         <button class="fav-remove-btn" onclick="removeFavorite('${fav.id}', '${fav.internship_id}')" title="Remove">✕</button>
