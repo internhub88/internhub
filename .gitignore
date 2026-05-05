@@ -4,3 +4,9 @@ dist
 *.log
 *.env
 .venv/
+*.pdf
+*.pptx
+*.mp4
+*.webm
+demo_video/
+*.py

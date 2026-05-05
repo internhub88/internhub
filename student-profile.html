@@ -283,23 +283,9 @@
               </select>
             </div>
 
-            <!-- EN: Danger Zone — GDPR Art. 17 "right to erasure" implementation.
-                     openDeleteAccountModal() shows a confirmation modal. The user must type
-                     "DELETE" exactly to confirm. confirmDeleteAccount() in profile.js deletes:
-                     - student_profiles row, - applications rows, - practice_requests rows,
-                     - CV file from Supabase Storage, - Users row, - Supabase Auth user.
-                 FI: Vaaravyöhyke — GDPR Art. 17 "oikeus tulla unohdetuksi" -toteutus.
-                     openDeleteAccountModal() näyttää vahvistusmodaalin. Käyttäjän on kirjoitettava
-                     "DELETE" täsmälleen vahvistaakseen. confirmDeleteAccount() profile.js:ssä poistaa:
-                     - student_profiles-rivi, - applications-rivit, - practice_requests-rivit,
-                     - CV-tiedosto Supabase Storagesta, - Users-rivi, - Supabase Auth -käyttäjä. -->
-            <div style="margin-top:3rem; padding-top:2rem; border-top:2px dashed #fca5a5;">
-              <div style="border:1px solid #fca5a5; background:#fff5f5; border-radius:8px; padding:1.25rem;">
-                <h4 style="color:#dc2626; margin-top:0;" data-i18n="studentProfile.dangerTitle">⚠ Danger Zone</h4>
-                <p style="font-size:0.85rem; color:#6b7280; margin:0 0 0.75rem;" data-i18n="studentProfile.dangerDesc">Permanently delete your account and all personal data (GDPR Art. 17).</p>
-                <button class="btn" style="width:100%; background:#dc2626; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:600;"
-                  onclick="openDeleteAccountModal()" data-i18n="studentProfile.btnDeleteAccount">Delete My Account</button>
-              </div>
+            <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid #e5e7eb; text-align:center;">
+              <button style="background:none; border:none; color:#9ca3af; font-size:0.8rem; cursor:pointer; text-decoration:underline; padding:4px 8px;"
+                onclick="openDeleteAccountModal()" data-i18n="studentProfile.btnDeleteAccount">Delete My Account</button>
             </div>
           </div>
         </div>
@@ -413,31 +399,28 @@
           </div><!-- end sidebar-col -->
         </div><!-- end profile-page-layout -->
 
-  <!-- MODAL: Delete Account Confirmation
-       EN: Shown by openDeleteAccountModal() when the student clicks "Delete My Account".
-           The user must type "DELETE" exactly in #deleteConfirmInput before the confirm button
-           becomes effective. id="deleteAccountError" shows validation errors.
-           onclick on the backdrop closes the modal without action.
-       FI: Näytetään openDeleteAccountModal()-funktiolla kun opiskelija napsauttaa "Delete My Account".
-           Käyttäjän täytyy kirjoittaa "DELETE" täsmälleen #deleteConfirmInput-kenttään
-           ennen kuin vahvistuspainike toimii. id="deleteAccountError" näyttää validointivirheet. -->
-  <div id="deleteAccountModal" style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7);" onclick="if(event.target===this) closeDeleteAccountModal()">
-    <div style="background:#fff; margin:8% auto; padding:28px; width:95%; max-width:440px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
-      <h3 style="color:#dc2626; margin-top:0;">Delete Account</h3>
-      <p style="color:#374151; margin-bottom:0.5rem;">This will permanently delete:</p>
-      <ul style="color:#6b7280; font-size:0.9rem; margin:0 0 1rem; padding-left:1.2rem; line-height:1.8;">
-        <li>Your profile and personal data</li>
-        <li>All applications</li>
-        <li>All internship requests</li>
-        <li>Your CV and photo</li>
+  <!-- MODAL: Delete Account Confirmation -->
+  <div id="deleteAccountModal" style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeDeleteAccountModal()">
+    <div style="background:#fff; margin:6% auto; padding:32px; width:95%; max-width:460px; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <span style="font-size:1.5rem;">🗑️</span>
+        <h3 style="margin:0; font-size:1.15rem; color:#111827;" data-i18n="studentProfile.deleteModalTitle">Delete your account?</h3>
+      </div>
+      <p style="color:#4b5563; font-size:0.9rem; margin:0 0 12px;" data-i18n="studentProfile.deleteModalDesc">This will permanently remove all your data from the platform in accordance with GDPR Art. 17. The following will be deleted:</p>
+      <ul style="color:#6b7280; font-size:0.875rem; margin:0 0 16px; padding-left:1.2rem; line-height:2;">
+        <li data-i18n="studentProfile.deleteItem1">Profile and personal information</li>
+        <li data-i18n="studentProfile.deleteItem2">All submitted applications</li>
+        <li data-i18n="studentProfile.deleteItem3">All internship requests</li>
+        <li data-i18n="studentProfile.deleteItem4">CV and profile photo</li>
       </ul>
-      <p style="font-size:0.9rem; color:#374151; margin-bottom:0.5rem;"><strong>This action cannot be undone.</strong></p>
-      <p style="font-size:0.9rem; color:#374151; margin-bottom:0.75rem;">Type <strong>DELETE</strong> to confirm:</p>
-      <input type="text" id="deleteConfirmInput" class="edit-input" placeholder="Type DELETE" style="margin-bottom:1rem;" />
-      <div id="deleteAccountError" style="display:none; color:#dc2626; font-size:0.85rem; margin-bottom:0.75rem;"></div>
+      <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:14px; margin-bottom:16px;">
+        <p style="font-size:0.85rem; color:#374151; margin:0 0 10px;"><span data-i18n="studentProfile.deleteConfirmPrompt">To confirm, type</span> <strong>Delete</strong>:</p>
+        <input type="text" id="deleteConfirmInput" class="edit-input" placeholder="Delete" style="margin-bottom:0;" autocomplete="off" />
+        <div id="deleteAccountError" style="display:none; color:#dc2626; font-size:0.8rem; margin-top:6px;"></div>
+      </div>
       <div style="display:flex; gap:10px;">
-        <button id="confirmDeleteBtn" onclick="confirmDeleteAccount()" style="flex:2; padding:11px; background:#dc2626; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Delete permanently</button>
-        <button onclick="closeDeleteAccountModal()" class="btn btn-secondary" style="flex:1; padding:11px;">Cancel</button>
+        <button onclick="closeDeleteAccountModal()" class="btn btn-secondary" style="flex:1; padding:11px;" data-i18n="studentProfile.btnCancel">Cancel</button>
+        <button id="confirmDeleteBtn" onclick="confirmDeleteAccount()" style="flex:1; padding:11px; background:#dc2626; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;" data-i18n="studentProfile.btnConfirmDelete">Delete account</button>
       </div>
     </div>
   </div>

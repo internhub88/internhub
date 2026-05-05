@@ -4534,8 +4534,8 @@ async function confirmDeleteAccount() {
   const input = document.getElementById('deleteConfirmInput').value.trim();
   const errorEl = document.getElementById('deleteAccountError');
 
-  if (input !== 'DELETE') {
-    errorEl.textContent = 'Please type DELETE exactly to confirm.';
+  if (input.toLowerCase() !== 'delete') {
+    errorEl.textContent = 'Please type Delete to confirm.';
     errorEl.style.display = 'block';
     return;
   }
