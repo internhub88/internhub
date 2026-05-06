@@ -447,7 +447,7 @@ function formatDateEuropean(dateString) {
 function filterJobs() {
   const searchText = document.getElementById('searchInput')?.value?.toLowerCase() || '';
   const locationText = document.getElementById('filterLocation')?.value?.toLowerCase() || '';
-  const categoryId = document.getElementById('filterCategory')?.value || '';
+  const categoryId = window._selectedCategoryValue || '';
   const favoritesFilter = document.getElementById('favoritesFilter')?.value || 'all';
   const dateStartLimit = document.getElementById('filterDateStart')?.value || '';
   const dateEndLimit = document.getElementById('filterDateEnd')?.value || '';
@@ -548,6 +548,14 @@ function sortJobs() {
   cards.forEach(card => jobsList.appendChild(card));
 }
 
+function toggleGroupExpand(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isOpen = el.style.display === 'block';
+  el.style.display = isOpen ? 'none' : 'block';
+  const btn = el.previousElementSibling?.querySelector('button');
+  if (btn) btn.textContent = isOpen ? '▶' : '▼';
+}
 /**
  * EN: Fetches all job categories (joined with their parent group title) from
  *     Supabase and populates the #filterCategory select element.
@@ -560,43 +568,186 @@ function sortJobs() {
 // LOAD CATEGORIES FOR FILTER
 // ==========================================
 async function loadCategoriesForFilter() {
-  const filterCategory = document.getElementById('filterCategory');
-  if (!filterCategory) return;
-
   try {
-    const { data: groups, error: groupError } = await supabaseClient
+    const { data: groups, error } = await supabaseClient
       .from('job_groups')
-      .select(`
-        group_id,
-        title,
-        job_categories(category_id, title)
-      `)
+      .select('group_id, title, job_categories(category_id, title)')
       .order('title');
 
-    if (groupError) throw groupError;
+    if (error) throw error;
 
-    filterCategory.innerHTML = '<option value="">All Categories</option>';
-
+    // Build categoryGroupMap for filterJobs()
     categoryGroupMap = {};
     groups.forEach(group => {
-      // Group-level option (selecting this matches ALL categories in the group)
-      const groupOpt = document.createElement('option');
-      groupOpt.value = `group:${group.group_id}`;
-      groupOpt.textContent = `⬡ ${group.title}`;
-      groupOpt.style.fontWeight = '700';
-      filterCategory.appendChild(groupOpt);
-
-      // Individual category options indented under the group
       (group.job_categories || []).forEach(cat => {
         categoryGroupMap[cat.category_id] = group.group_id;
-        const catOpt = document.createElement('option');
-        catOpt.value = `cat:${cat.category_id}`;
-        catOpt.textContent = `  - ${cat.title}`;
-        filterCategory.appendChild(catOpt);
       });
     });
+
+    // Build the accordion panel
+    const container = document.getElementById('categoryGroupList');
+    if (!container) return;
+
+    container.innerHTML = groups.map(group => `
+      <div style="margin-bottom:0.2rem; border:1px solid #f0f0f0; border-radius:6px; overflow:hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa;">
+          <div onclick="selectCategory('group:${group.group_id}', '${group.title}')"
+               style="flex:1; padding:0.55rem 0.75rem; cursor:pointer; font-weight:600;
+                      font-size:0.875rem; color:#374151;">
+            ${group.title}
+            <span style="font-size:0.75rem; color:#9ca3af; font-weight:400; margin-left:0.25rem;">
+              (${group.job_categories?.length || 0})
+            </span>
+          </div>
+          <button onclick="toggleGroupExpand(${group.group_id})" id="group-arrow-${group.group_id}"
+                  style="background:none; border:none; cursor:pointer; padding:0.55rem 0.75rem;
+                         color:#9ca3af; font-size:0.8rem;">▶</button>
+        </div>
+        <div id="group-cats-${group.group_id}" style="display:none; background:#f9fafb; border-top:1px solid #f0f0f0;">
+          ${(group.job_categories || []).map(cat => `
+            <div onclick="selectCategory('cat:${cat.category_id}', '${cat.title}')"
+                 style="padding:0.4rem 1.25rem; cursor:pointer; font-size:0.85rem; color:#6b7280;
+                        border-bottom:1px solid #f3f4f6;">
+              ${cat.title}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+
   } catch (err) {
     console.error('Error loading categories:', err);
+  }
+}
+
+
+// ── EDIT PROFILE: category group panel ──────────────────────
+function toggleEditCategoryPanel() {
+  const panel = document.getElementById('editCategoryPanel');
+  const isOpen = panel.style.display === 'block';
+  closeAllCategoryPanels();
+  if (!isOpen) {
+    panel.style.display = 'block';
+    populateCategoryGroupList('editCategoryGroupList', selectEditCategory);
+  }
+}
+
+function selectEditCategory(value, label) {
+  if (!value) return;
+  // Add as a tag if not already selected
+  const container = document.getElementById('eSelectedCategories');
+  if ([...container.querySelectorAll('[data-cat]')].some(el => el.dataset.cat === value)) return;
+  const tag = document.createElement('span');
+  tag.dataset.cat = value;
+  tag.className = 'category-tag';
+  tag.innerHTML = `${label} <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;margin-left:4px;color:inherit;">×</button>`;
+  container.appendChild(tag);
+  document.getElementById('editCategoryPanel').style.display = 'none';
+}
+
+function clearEditCategories() {
+  document.getElementById('eSelectedCategories').innerHTML = '';
+  document.getElementById('editCategoryPanel').style.display = 'none';
+}
+
+// ── ADD REQUEST MODAL: category group panel ──────────────────
+function toggleReqCategoryPanel() {
+  const panel = document.getElementById('reqCategoryPanel');
+  const isOpen = panel.style.display === 'block';
+  closeAllCategoryPanels();
+  if (!isOpen) {
+    panel.style.display = 'block';
+    populateCategoryGroupList('reqCategoryGroupList', selectReqCategory);
+  }
+}
+
+function selectReqCategory(value, label) {
+  if (!value) return;
+  const container = document.getElementById('reqSelectedCategories');
+  if ([...container.querySelectorAll('[data-cat]')].some(el => el.dataset.cat === value)) return;
+  const tag = document.createElement('span');
+  tag.dataset.cat = value;
+  tag.className = 'category-tag';
+  tag.innerHTML = `${label} <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;margin-left:4px;color:inherit;">×</button>`;
+  container.appendChild(tag);
+  document.getElementById('reqCategoryPanel').style.display = 'none';
+}
+
+function clearReqCategories() {
+  document.getElementById('reqSelectedCategories').innerHTML = '';
+  document.getElementById('reqCategoryPanel').style.display = 'none';
+}
+
+// ── Shared: close all panels on outside click ────────────────
+function closeAllCategoryPanels() {
+  ['editCategoryPanel', 'reqCategoryPanel', 'categoryPanel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#editCategoryWrap') &&
+      !e.target.closest('#reqCategoryWrap') &&
+      !e.target.closest('#filterCategoryWrap')) {
+    closeAllCategoryPanels();
+  }
+});
+
+// ── Shared: populate the group list (reuse your existing groups/categories data) ──
+async function populateCategoryGroupList(listId, onSelect) {
+  const listEl = document.getElementById(listId);
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="padding:0.5rem 0.75rem; color:#9ca3af; font-size:0.85rem;">Loading...</div>';
+
+  try {
+    const { data: groups, error } = await supabaseClient
+      .from('job_groups')
+      .select('group_id, title, job_categories(category_id, title)')
+      .order('title');
+
+    if (error) throw error;
+
+    listEl.innerHTML = groups.map(group => `
+      <div style="margin-bottom:0.2rem; border:1px solid #f0f0f0; border-radius:6px; overflow:hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa;">
+          <div onclick="(${onSelect.name || 'arguments.callee'})('group:${group.group_id}', '${group.title}')"
+               data-onselect-group="${group.group_id}" data-onselect-label="${group.title}"
+               style="flex:1; padding:0.55rem 0.75rem; cursor:pointer; font-weight:600;
+                      font-size:0.875rem; color:#374151;">
+            ${group.title}
+            <span style="font-size:0.75rem; color:#9ca3af; font-weight:400; margin-left:0.25rem;">
+              (${group.job_categories?.length || 0})
+            </span>
+          </div>
+          <button onclick="toggleGroupExpand('${listId}_${group.group_id}')"
+                  style="background:none; border:none; cursor:pointer; padding:0.55rem 0.75rem;
+                         color:#9ca3af; font-size:0.8rem;">▶</button>
+        </div>
+        <div id="${listId}_${group.group_id}" style="display:none; background:#f9fafb; border-top:1px solid #f0f0f0;">
+          ${(group.job_categories || []).map(cat => `
+            <div data-onselect-cat="${cat.category_id}" data-onselect-label="${cat.title}"
+                 style="padding:0.4rem 1.25rem; cursor:pointer; font-size:0.85rem; color:#6b7280;
+                        border-bottom:1px solid #f3f4f6;">
+              ${cat.title}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    // Attach click handlers using the passed onSelect function directly
+    listEl.querySelectorAll('[data-onselect-group]').forEach(el => {
+      el.addEventListener('click', () =>
+        onSelect('group:' + el.dataset.onselectGroup, el.dataset.onselectLabel));
+    });
+    listEl.querySelectorAll('[data-onselect-cat]').forEach(el => {
+      el.addEventListener('click', () =>
+        onSelect('cat:' + el.dataset.onselectCat, el.dataset.onselectLabel));
+    });
+
+  } catch (err) {
+    console.error('populateCategoryGroupList error:', err);
+    listEl.innerHTML = '<div style="padding:0.5rem 0.75rem; color:#ef4444; font-size:0.85rem;">Failed to load categories</div>';
   }
 }
 

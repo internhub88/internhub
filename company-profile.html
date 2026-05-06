@@ -535,13 +535,29 @@
         </div>
 
         <div class="form-group">
-            <label data-i18n="companyProfile.postCategoryLabel">Category</label>
-            <div class="category-search">
-                <input type="text" id="pCategorySearch" placeholder="Search categories..." oninput="filterPosCategories()" onfocus="showPosCategoryDropdown()" />
-                <div class="category-dropdown" id="posCategoryDropdown"></div>
+    <label data-i18n="companyProfile.postCategoryLabel">Category</label>
+    
+    <!-- Selected tags shown above the button -->
+    <div class="selected-categories" id="posSelectedCategories" style="margin-bottom:0.5rem;"></div>
+
+    <div style="position:relative;">
+        <button type="button" id="posCategoryBtn" onclick="togglePosCategoryPanel()"
+            style="width:100%; height:43px; background:white; border:1px solid var(--border-color);
+                   border-radius:8px; padding:0 1rem; text-align:left; cursor:pointer; font-size:0.9rem;
+                   display:flex; align-items:center; justify-content:space-between; color:var(--text-color);">
+            <span id="posCategoryLabel">Select categories...</span>
+            <span style="color:#9ca3af;">▾</span>
+        </button>
+
+        <div id="posCategoryPanel" style="display:none; position:absolute; top:48px; left:0; right:0;
+             background:white; border:1px solid var(--border-color); border-radius:8px;
+             box-shadow:0 4px 20px rgba(0,0,0,0.12); z-index:999; max-height:300px; overflow-y:auto;">
+            <div style="padding:0.5rem;">
+                <div id="posCategoryGroupList"></div>
             </div>
-            <div class="selected-categories" id="posSelectedCategories"></div>
         </div>
+    </div>
+</div>
         <div class="form-group">
           <label data-i18n="companyProfile.postVisibilityLabel">Visibility</label>
           <select id="pStatus" class="form-control">

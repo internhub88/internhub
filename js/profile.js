@@ -834,9 +834,9 @@ function openPostModal() {
   document.getElementById('pStatus').value = "active";
   document.getElementById('pSpots').value = 1;
   positionSelectedCategoryIds = [];
-  renderPosSelectedCategories();
-  document.getElementById('pCategorySearch').value = "";
-  document.getElementById('posCategoryDropdown').classList.remove('show');
+renderPosSelectedCategories();
+updatePosCategoryLabel();
+buildPosCategoryAccordion();
 
   modal.style.display = 'block';
   document.body.style.overflow = 'hidden';
@@ -905,8 +905,9 @@ async function openEditModal(id) {
           .select('category_id')
           .eq('position_id', id);
       positionSelectedCategoryIds = (posCats || []).map(pc => pc.category_id);
-      document.getElementById('pCategorySearch').value = "";
-      renderPosSelectedCategories();
+renderPosSelectedCategories();
+updatePosCategoryLabel();
+buildPosCategoryAccordion();
 
       modal.style.display = 'block';
       document.body.style.overflow = 'hidden';
@@ -1010,39 +1011,62 @@ window.onclick = function(event) {
 // ==========================================
 // POSITION CATEGORY MULTI-SELECT
 // ==========================================
+function togglePosCategoryPanel() {
+  const panel = document.getElementById('posCategoryPanel');
+  if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
 
-function buildPosCategoryDropdown(query) {
-  const dropdown = document.getElementById('posCategoryDropdown');
-  if (!dropdown) return;
-  const q = (query || '').toLowerCase();
+function buildPosCategoryAccordion() {
+  const container = document.getElementById('posCategoryGroupList');
+  if (!container) return;
+
+  // Group allCategories by job_groups
   const groups = {};
   allCategories.forEach(cat => {
-    if (q && !cat.title.toLowerCase().includes(q)) return;
     const groupTitle = cat.job_groups?.title || 'Other';
-    if (!groups[groupTitle]) groups[groupTitle] = [];
-    groups[groupTitle].push(cat);
+    const groupId = cat.group_id;
+    if (!groups[groupTitle]) groups[groupTitle] = { groupId, cats: [] };
+    groups[groupTitle].cats.push(cat);
   });
-  dropdown.innerHTML = Object.entries(groups).map(([groupTitle, cats]) => `
-    <div class="category-group-title">${groupTitle}</div>
-    ${cats.map(cat => `
-      <div class="category-option${positionSelectedCategoryIds.includes(cat.category_id) ? ' selected' : ''}"
-           onclick="togglePosCategory(${cat.category_id})"
-           data-cat-title="${cat.title}">
-        ${cat.title}
+
+  container.innerHTML = Object.entries(groups).map(([groupTitle, group]) => `
+    <div style="margin-bottom:0.2rem; border:1px solid #f0f0f0; border-radius:6px; overflow:hidden;">
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa;">
+        <div style="flex:1; padding:0.55rem 0.75rem; font-weight:600; font-size:0.875rem; color:#374151;">
+          ${groupTitle}
+          <span style="font-size:0.75rem; color:#9ca3af; font-weight:400; margin-left:0.25rem;">
+            (${group.cats.length})
+          </span>
+        </div>
+        <button type="button" onclick="togglePosGroupExpand('${groupTitle.replace(/'/g, '')}')"
+                id="pos-group-arrow-${groupTitle.replace(/[^a-z0-9]/gi, '')}"
+                style="background:none; border:none; cursor:pointer; padding:0.55rem 0.75rem;
+                       color:#9ca3af; font-size:0.8rem;">▶</button>
       </div>
-    `).join('')}
+      <div id="pos-group-cats-${groupTitle.replace(/[^a-z0-9]/gi, '')}"
+           style="display:none; background:#f9fafb; border-top:1px solid #f0f0f0;">
+        ${group.cats.map(cat => `
+          <div onclick="togglePosCategory(${cat.category_id})"
+               id="pos-cat-row-${cat.category_id}"
+               style="padding:0.4rem 1.25rem; cursor:pointer; font-size:0.85rem; color:#6b7280;
+                      border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:0.5rem;">
+            <span id="pos-cat-check-${cat.category_id}" style="color:#4f46e5; font-weight:700; display:${positionSelectedCategoryIds.includes(cat.category_id) ? 'inline' : 'none'};">✓</span>
+            ${cat.title}
+          </div>
+        `).join('')}
+      </div>
+    </div>
   `).join('');
 }
 
-function showPosCategoryDropdown() {
-  buildPosCategoryDropdown(document.getElementById('pCategorySearch').value);
-  document.getElementById('posCategoryDropdown').classList.add('show');
-}
-
-function filterPosCategories() {
-  const query = document.getElementById('pCategorySearch').value;
-  buildPosCategoryDropdown(query);
-  document.getElementById('posCategoryDropdown').classList.add('show');
+function togglePosGroupExpand(groupTitle) {
+  const safe = groupTitle.replace(/[^a-z0-9]/gi, '');
+  const cats = document.getElementById(`pos-group-cats-${safe}`);
+  const arrow = document.getElementById(`pos-group-arrow-${safe}`);
+  if (!cats) return;
+  const isOpen = cats.style.display !== 'none';
+  cats.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.textContent = isOpen ? '▶' : '▼';
 }
 
 function togglePosCategory(categoryId) {
@@ -1051,9 +1075,21 @@ function togglePosCategory(categoryId) {
   } else {
     positionSelectedCategoryIds.push(categoryId);
   }
+  // Update checkmark
+  const check = document.getElementById(`pos-cat-check-${categoryId}`);
+  if (check) check.style.display = positionSelectedCategoryIds.includes(categoryId) ? 'inline' : 'none';
   renderPosSelectedCategories();
-  document.getElementById('posCategoryDropdown').classList.remove('show');
-  document.getElementById('pCategorySearch').value = '';
+  updatePosCategoryLabel();
+}
+
+function updatePosCategoryLabel() {
+  const label = document.getElementById('posCategoryLabel');
+  if (!label) return;
+  if (positionSelectedCategoryIds.length === 0) {
+    label.textContent = 'Select categories...';
+  } else {
+    label.textContent = `${positionSelectedCategoryIds.length} selected`;
+  }
 }
 
 function renderPosSelectedCategories() {
@@ -1069,6 +1105,15 @@ function renderPosSelectedCategories() {
     ` : '';
   }).join('');
 }
+
+// Close panel when clicking outside
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('posCategoryBtn')?.parentElement;
+  const panel = document.getElementById('posCategoryPanel');
+  if (panel && wrap && !wrap.contains(e.target)) {
+    panel.style.display = 'none';
+  }
+});
 
 /**
  * EN: Populates the category <select> in the post/edit modal with <optgroup>

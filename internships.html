@@ -88,9 +88,27 @@
         <div>
           <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;" 
        data-i18n="internships.categoryLabel">Group / Category</label>
-          <select id="filterCategory" style="width:100%; height:43px; margin:0;">
-            <option value="" data-i18n="internships.categoryDefault">All Categories</option>
-          </select>
+          <div id="filterCategoryWrap" style="position:relative;">
+  <button id="categoryFilterBtn" onclick="toggleCategoryPanel()"
+    style="width:100%; height:43px; margin:0; background:white; border:1px solid var(--border-color);
+           border-radius:8px; padding:0 1rem; text-align:left; cursor:pointer; font-size:0.9rem;
+           display:flex; align-items:center; justify-content:space-between; color:var(--text-color);">
+    <span id="categoryFilterLabel">All Categories</span>
+    <span style="color:#9ca3af;">▾</span>
+  </button>
+  <div id="categoryPanel" style="display:none; position:absolute; top:48px; left:0; right:0;
+       background:white; border:1px solid var(--border-color); border-radius:8px;
+       box-shadow:0 4px 20px rgba(0,0,0,0.12); z-index:999; max-height:380px; overflow-y:auto;">
+    <div style="padding:0.5rem;">
+      <div onclick="selectCategory('', 'All Categories')"
+           style="padding:0.5rem 0.75rem; cursor:pointer; border-radius:6px; font-weight:600;
+                  background:#eef2ff; color:#4f46e5; margin-bottom:0.35rem; font-size:0.875rem;">
+        All Categories
+      </div>
+      <div id="categoryGroupList"></div>
+    </div>
+  </div>
+</div>
         </div>
         <div>
           <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;" data-i18n="internships.startLabel">Start After</label>
