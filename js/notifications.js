@@ -92,6 +92,31 @@ function buildNotifBell(navMenu, userId) {
   `;
   navMenu.appendChild(li);
   _loadNotifCount(userId);
+  _subscribeRealtime(userId);
+}
+
+function _subscribeRealtime(userId) {
+  try {
+    supabaseClient
+      .channel('notif-user-' + userId)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${userId}`
+      }, (payload) => {
+        const badge = document.getElementById('notifBadge');
+        const current = (badge && badge.style.display !== 'none') ? (parseInt(badge.textContent) || 0) : 0;
+        _updateBadge(current + 1);
+        const panel = document.getElementById('notifPanel');
+        if (panel && panel.classList.contains('show')) {
+          _renderNotifications();
+        }
+      })
+      .subscribe();
+  } catch (e) {
+    console.warn('[Notif] realtime subscribe failed:', e);
+  }
 }
 
 async function _loadNotifCount(userId) {
