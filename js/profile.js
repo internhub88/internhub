@@ -3339,6 +3339,7 @@ function enterEditMode() {
   document.getElementById('editProfileBtn').style.display = 'none';
   document.getElementById('saveProfileBtn').style.display = 'inline-block';
   document.getElementById('cancelEditBtn').style.display = 'inline-block';
+  document.getElementById('deleteAccountWrap').style.display = 'block';
 
   // Fill form fields
   document.getElementById('eFirstName').value = currentProfile.first_name || '';
@@ -3385,6 +3386,7 @@ function cancelEditMode() {
   document.getElementById('editProfileBtn').style.display = 'inline-block';
   document.getElementById('saveProfileBtn').style.display = 'none';
   document.getElementById('cancelEditBtn').style.display = 'none';
+  document.getElementById('deleteAccountWrap').style.display = 'none';
 }
 
 // This function opens and closes the edit boxes
