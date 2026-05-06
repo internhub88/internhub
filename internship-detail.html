@@ -159,13 +159,16 @@
                    saveCompanyProfile() kirjoittaa muutokset takaisin 'Companies'-tauluun Supabasessa.
                ──────────────────────────────────────────────────────── -->
 <div class="card" style="margin-top: 2rem;">
-  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
     <h3 class="card-title" data-i18n="pages.internshipDetail.companyProfileH">Company Profile</h3>
-    <div id="companyAuthControls">
-
-      <div id="editActionButtons" style="display: none; gap: 0.5rem;">
-        <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()" data-i18n="pages.internshipDetail.saveBtn">Save</button>
-        <button class="btn btn-small btn-secondary" id="cancelCompanyBtn" onclick="toggleCompanyEdit(false)" data-i18n="pages.internshipDetail.cancelBtn">Cancel</button>
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+      <!-- View Company Profile button — shown only to students via JS -->
+      <button id="viewCompanyProfileBtn" class="btn btn-small btn-outline" style="display:none;" data-i18n="pages.internshipDetail.viewCompanyProfileBtn">🏢 View Full Profile</button>
+      <div id="companyAuthControls">
+        <div id="editActionButtons" style="display: none; gap: 0.5rem;">
+          <button class="btn btn-small btn-primary" id="saveCompanyBtn" data-action="save-company" data-i18n="pages.internshipDetail.saveBtn">Save</button>
+          <button class="btn btn-small btn-secondary" id="cancelCompanyBtn" data-action="cancel-company" data-i18n="pages.internshipDetail.cancelBtn">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
@@ -367,6 +370,80 @@
       <p data-i18n="footer.copyright">&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
     </div>
   </footer>
+
+  <!-- ── COMPANY PROFILE MODAL (students only) ──────────────────────────
+       EN: Full company profile modal opened when student clicks "View Full Profile".
+           Populated by openCompanyProfileModal() in internship-detail.js.
+           Shows company logo, name, description, contact details, and team members.
+       FI: Koko yrityksen profiilimodaali, joka avautuu opiskelijan klikatessa
+           "Näytä koko profiili". Täytetään openCompanyProfileModal()-funktiolla.
+       ──────────────────────────────────────────────────────── -->
+  <div id="companyProfileModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:11000; overflow-y:auto;">
+    <div class="company-profile-modal-box">
+      <button id="companyProfileModalClose" class="company-profile-modal-close" aria-label="Close">&times;</button>
+
+      <!-- Loading state -->
+      <div id="cpmLoading" style="text-align:center; padding:3rem 0; color:#6b7280;">
+        <div style="font-size:2.5rem; margin-bottom:0.75rem;">⏳</div>
+        <p style="margin:0;" data-i18n="pages.internshipDetail.companyProfileLoading">Loading company profile...</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="cpmError" style="display:none; text-align:center; padding:2.5rem; color:#ef4444;">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">⚠️</div>
+        <p style="margin:0;" data-i18n="pages.internshipDetail.companyProfileError">Could not load company profile.</p>
+      </div>
+
+      <!-- Content -->
+      <div id="cpmContent" style="display:none;">
+
+        <!-- Header: logo + name + basic info -->
+        <div class="cpm-header">
+          <div id="cpmLogo" class="cpm-logo">🏢</div>
+          <div class="cpm-header-info">
+            <h2 id="cpmName" style="margin:0 0 0.25rem;"></h2>
+            <p id="cpmCity" style="margin:0; color:#6b7280; font-size:0.9rem;"></p>
+            <p id="cpmWebsiteHeader" style="margin:0.15rem 0 0; font-size:0.9rem;"></p>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div id="cpmAboutWrap" class="cpm-section">
+          <p class="cpm-section-label" data-i18n="pages.internshipDetail.companyAboutLabel">About</p>
+          <p id="cpmAbout" style="margin:0; color:#374151; white-space:pre-wrap; line-height:1.65;"></p>
+        </div>
+
+        <!-- Contact details -->
+        <div class="cpm-section cpm-details-grid">
+          <div id="cpmEmailWrap">
+            <p class="cpm-section-label" data-i18n="pages.internshipDetail.emailLabel">Email</p>
+            <p id="cpmEmail" style="margin:0;"></p>
+          </div>
+          <div id="cpmWebsiteWrap">
+            <p class="cpm-section-label" data-i18n="pages.internshipDetail.websiteLabel">Website</p>
+            <p id="cpmWebsite" style="margin:0;"></p>
+          </div>
+          <div id="cpmHqWrap">
+            <p class="cpm-section-label" data-i18n="pages.internshipDetail.hqLabel">Headquarters</p>
+            <p id="cpmHq" style="margin:0; color:#374151;"></p>
+          </div>
+          <div id="cpmYtWrap">
+            <p class="cpm-section-label" data-i18n="pages.internshipDetail.ytunnusLabel">Business ID</p>
+            <p id="cpmYt" style="margin:0; color:#374151;"></p>
+          </div>
+        </div>
+
+        <!-- Team members -->
+        <div id="cpmTeamWrap" class="cpm-section">
+          <p class="cpm-section-label" data-i18n="pages.internshipDetail.companyTeamLabel">Our Team</p>
+          <div id="cpmTeam"></div>
+        </div>
+
+      </div><!-- end cpmContent -->
+
+      <button id="companyProfileModalCloseBtn" class="btn btn-primary" style="width:100%; margin-top:1.5rem; display:none;" data-i18n="pages.internshipDetail.closeBtn">Close</button>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>

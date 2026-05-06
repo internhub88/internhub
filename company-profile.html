@@ -277,9 +277,8 @@
           </div>
         <div class="form-group">
 <label data-i18n="companyProfile.businessIdLabel">Business ID (Y-Tunnus)</label>
-          <input type="text" id="eTeamSize" class="edit-input" list="prhSuggestions" autocomplete="off" placeholder="23456-7"> 
-          <small id="prhStatus" style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem;"></small>
-          <datalist id="prhSuggestions"></datalist>
+          <input type="text" id="eTeamSize" class="edit-input" disabled autocomplete="off" style="background:#f8f9fa; color:#6b7280; border-color:#eee; cursor:default;">
+          <small data-i18n="companyProfile.businessIdReadOnly" style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem; display:block;">Business ID cannot be changed after registration.</small>
         </div>
         <div class="form-group">
           <label data-i18n="companyProfile.websiteLabel">Website</label>

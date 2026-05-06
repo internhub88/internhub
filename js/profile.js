@@ -749,7 +749,7 @@ async function saveCompanyProfile() {
             description: document.getElementById('eCompanyDesc').value.trim(),
             website: document.getElementById('eWebsite').value.trim(),
             city: document.getElementById('eHeadquarters').value.trim(),
-            business_id: document.getElementById('eTeamSize').value.trim(),
+
             updated_at: new Date().toISOString()
         };
 
@@ -2717,13 +2717,14 @@ function showCompanyResponse(applicationId) {
  */
 // Function to open the modal and fill it with current data
 function openEditAppModal(app) {
+  const session = getCurrentSession();
   document.getElementById('editAppId').value = app.application_id;
-  document.getElementById('editAppName').value = app.full_name || '';
-  document.getElementById('editAppEmail').value = app.email || '';
-  document.getElementById('editAppPhone').value = app.phone || '';
+  document.getElementById('editAppFirstName').value = currentProfile?.first_name || '';
+  document.getElementById('editAppLastName').value = currentProfile?.last_name || '';
+  document.getElementById('editAppEmail').value = app.email || session?.login || '';
+  document.getElementById('editAppPhone').value = app.phone || currentProfile?.phone || '';
   document.getElementById('editAppLetter').value = app.cover_letter || '';
-  
-  // Store current CV state in global variables or data attributes
+
   renderCvEditSection(app.cv_original_name, app.cv_url);
 
   document.getElementById('editAppModal').style.display = 'block';
@@ -2842,9 +2843,6 @@ async function updateApplication() {
   const saveBtn = document.querySelector('#editAppModal .btn-primary');
 
   const updatedData = {
-      full_name: document.getElementById('editAppName').value,
-      email: document.getElementById('editAppEmail').value,
-      phone: document.getElementById('editAppPhone').value,
       cover_letter: document.getElementById('editAppLetter').value,
       updated_at: new Date().toISOString()
   };
@@ -4877,8 +4875,8 @@ async function confirmDeleteAccount() {
   const input = document.getElementById('deleteConfirmInput').value.trim();
   const errorEl = document.getElementById('deleteAccountError');
 
-  if (input !== 'DELETE') {
-    errorEl.textContent = 'Please type DELETE exactly to confirm.';
+  if (input.toLowerCase() !== 'delete') {
+    errorEl.textContent = 'Please type Delete to confirm.';
     errorEl.style.display = 'block';
     return;
   }

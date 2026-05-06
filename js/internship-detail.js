@@ -1182,6 +1182,150 @@ async function deleteApplicationFromSidebar(applicationId, studentName) {
   }
 }
 
+/**
+ * EN: Opens the Company Profile modal for students only. Fetches company data
+ *     and team members from Supabase and displays them in the modal.
+ *     Only accessible to logged-in students (role 1).
+ * FI: Avaa yrityksen profiilimodaalin vain opiskelijoille. Hakee yrityksen tiedot
+ *     ja tiimijäsenet Supabasesta ja näyttää ne modaalissa.
+ *     Vain kirjautuneille opiskelijoille (rooli 1).
+ */
+async function openCompanyProfileModal() {
+  const userRole = localStorage.getItem('userRole');
+  if (userRole !== '1') {
+    showToast('Only students can view company profiles.', 'warning');
+    return;
+  }
+
+  const modal   = document.getElementById('companyProfileModal');
+  const loading = document.getElementById('cpmLoading');
+  const content = document.getElementById('cpmContent');
+  const errorEl = document.getElementById('cpmError');
+  const closeBtn = document.getElementById('companyProfileModalCloseBtn');
+  if (!modal) return;
+
+  // Reset to loading state
+  modal.style.display = 'block';
+  loading.style.display = 'block';
+  content.style.display = 'none';
+  errorEl.style.display  = 'none';
+  if (closeBtn) closeBtn.style.display = 'none';
+
+  try {
+    const company = window.currentCompany;
+    if (!company || !company.company_id) throw new Error('Company data not available');
+
+    // Fetch fresh company data + team in parallel
+    const [companyRes, teamRes] = await Promise.all([
+      supabaseClient.from('Companies').select('*').eq('company_id', company.company_id).single(),
+      supabaseClient.from('company_team').select('*').eq('company_id', company.company_id).order('created_at')
+    ]);
+
+    if (companyRes.error || !companyRes.data) throw new Error('Could not load company data');
+
+    const c    = companyRes.data;
+    const team = teamRes.data || [];
+
+    // --- Logo ---
+    const logoEl = document.getElementById('cpmLogo');
+    if (c.logo_url) {
+      logoEl.innerHTML = `<img src="${c.logo_url}" alt="${c.company_name || ''}" style="width:100%;height:100%;object-fit:contain;">`;
+    } else {
+      logoEl.textContent = '🏢';
+    }
+
+    // --- Name / city / website header ---
+    document.getElementById('cpmName').textContent = c.company_name || '';
+    document.getElementById('cpmCity').textContent = c.city ? `📍 ${c.city}` : '';
+    const websiteHeaderEl = document.getElementById('cpmWebsiteHeader');
+    if (c.website) {
+      websiteHeaderEl.innerHTML = `🌐 <a href="${c.website.startsWith('http') ? c.website : 'https://' + c.website}" target="_blank" rel="noopener" style="color:var(--primary-color);">${c.website}</a>`;
+    } else {
+      websiteHeaderEl.textContent = '';
+    }
+
+    // --- About ---
+    const aboutWrap = document.getElementById('cpmAboutWrap');
+    const aboutEl   = document.getElementById('cpmAbout');
+    if (c.description) {
+      aboutEl.textContent = c.description;
+      aboutWrap.style.display = '';
+    } else {
+      aboutWrap.style.display = 'none';
+    }
+
+    // --- Email ---
+    const emailEl = document.getElementById('cpmEmail');
+    if (c.contact_email) {
+      emailEl.innerHTML = `<a href="mailto:${c.contact_email}" style="color:var(--primary-color);">${c.contact_email}</a>`;
+    } else {
+      emailEl.textContent = '—';
+    }
+
+    // --- Website ---
+    const websiteEl = document.getElementById('cpmWebsite');
+    if (c.website) {
+      websiteEl.innerHTML = `<a href="${c.website.startsWith('http') ? c.website : 'https://' + c.website}" target="_blank" rel="noopener" style="color:var(--primary-color);">${c.website}</a>`;
+    } else {
+      websiteEl.textContent = '—';
+    }
+
+    // --- HQ ---
+    document.getElementById('cpmHq').textContent = c.city || '—';
+
+    // --- Y-Tunnus ---
+    document.getElementById('cpmYt').textContent = c.business_id || '—';
+
+    // --- Team ---
+    const teamWrap = document.getElementById('cpmTeamWrap');
+    const teamEl   = document.getElementById('cpmTeam');
+    if (team.length > 0) {
+      teamEl.innerHTML = team.map(m => `
+        <div class="cpm-team-member">
+          <div class="cpm-team-avatar">${(m.name || '?').charAt(0).toUpperCase()}</div>
+          <div>
+            <p style="margin:0; font-weight:600; color:#1f2937;">${m.name || ''}</p>
+            <p style="margin:0.1rem 0 0; font-size:0.82rem; color:#6b7280;">${m.job_title || ''}</p>
+            ${m.email ? `<p style="margin:0.1rem 0 0; font-size:0.82rem; color:#6b7280;">📧 ${m.email}</p>` : ''}
+            ${m.phone ? `<p style="margin:0.1rem 0 0; font-size:0.82rem; color:#6b7280;">📞 ${m.phone}</p>` : ''}
+          </div>
+        </div>
+      `).join('');
+      teamWrap.style.display = '';
+    } else {
+      teamWrap.style.display = 'none';
+    }
+
+    // Show content
+    loading.style.display = 'none';
+    content.style.display = 'block';
+    if (closeBtn) closeBtn.style.display = 'block';
+
+  } catch (err) {
+    console.error('openCompanyProfileModal error:', err);
+    loading.style.display = 'none';
+    errorEl.style.display  = 'block';
+    if (closeBtn) closeBtn.style.display = 'block';
+  }
+}
+
+/**
+ * EN: Shows or hides the "View Company Profile" button based on the current
+ *     user's role. Only students (role 1) see the button.
+ * FI: Näyttää tai piilottaa "Näytä yrityksen profiili" -painikkeen käyttäjän
+ *     roolin mukaan. Vain opiskelijat (rooli 1) näkevät painikkeen.
+ */
+function initCompanyProfileButton() {
+  const btn = document.getElementById('viewCompanyProfileBtn');
+  if (!btn) return;
+  const userRole = localStorage.getItem('userRole');
+  if (userRole === '1') {
+    btn.style.display = 'inline-block';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
   const urlParams = new URLSearchParams(window.location.search);
   const positionId = urlParams.get('id') || (typeof getUrlParameter === 'function' ? getUrlParameter('id') : null);
@@ -1207,4 +1351,41 @@ document.addEventListener('DOMContentLoaded', async function () {
       }
     });
   }
+
+  // Wire up company profile modal button
+  const viewBtn = document.getElementById('viewCompanyProfileBtn');
+  if (viewBtn) {
+    viewBtn.addEventListener('click', openCompanyProfileModal);
+  }
+
+  // Wire up company profile modal close buttons
+  const modalClose = document.getElementById('companyProfileModalClose');
+  if (modalClose) {
+    modalClose.addEventListener('click', function() {
+      document.getElementById('companyProfileModal').style.display = 'none';
+    });
+  }
+  const modalCloseBtn = document.getElementById('companyProfileModalCloseBtn');
+  if (modalCloseBtn) {
+    modalCloseBtn.addEventListener('click', function() {
+      document.getElementById('companyProfileModal').style.display = 'none';
+    });
+  }
+
+  // Close on backdrop click
+  const modal = document.getElementById('companyProfileModal');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+  }
+
+  // Wire up company card save/cancel (removed inline onclick)
+  const saveCompanyBtn = document.getElementById('saveCompanyBtn');
+  if (saveCompanyBtn) saveCompanyBtn.addEventListener('click', saveCompanyProfile);
+  const cancelCompanyBtn = document.getElementById('cancelCompanyBtn');
+  if (cancelCompanyBtn) cancelCompanyBtn.addEventListener('click', function() { toggleCompanyEdit(false); });
+
+  // Show/hide View Company Profile button based on role
+  initCompanyProfileButton();
 });
