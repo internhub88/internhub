@@ -757,6 +757,7 @@ async function loadInternships() {
         period_start,
         period_end,
         is_open_ended,
+        spots_total,
         status,
         company_id,
         created_at,
@@ -771,13 +772,21 @@ async function loadInternships() {
       throw error;
     }
 
-    // Exclude positions that already have an accepted student
+    // Exclude positions where all spots are filled (accepted_count >= spots_total)
     const { data: acceptedApps } = await supabaseClient
       .from('applications')
       .select('position_id')
       .eq('status', 'accepted');
-    const acceptedPositionIds = new Set((acceptedApps || []).map(a => a.position_id));
-    const visiblePositions = (positions || []).filter(p => !acceptedPositionIds.has(p.position_id));
+
+    const acceptedCountMap = {};
+    (acceptedApps || []).forEach(a => {
+      acceptedCountMap[a.position_id] = (acceptedCountMap[a.position_id] || 0) + 1;
+    });
+
+    const visiblePositions = (positions || []).filter(p => {
+      const accepted = acceptedCountMap[p.position_id] || 0;
+      return accepted < (p.spots_total || 1);
+    });
 
     // Load company names in bulk to avoid N+1 queries
     const companyIds = [...new Set(visiblePositions.map(p => p.company_id).filter(Boolean))];
@@ -837,6 +846,13 @@ async function loadInternships() {
             <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-left: auto;" data-job-id="${pos.position_id}">🤍</button>
           ` : '';
 
+      const spotsTotal = pos.spots_total || 1;
+      const acceptedCount = acceptedCountMap[pos.position_id] || 0;
+      const spotsLeft = spotsTotal - acceptedCount;
+      const spotsText = spotsTotal === 1
+        ? '1 spot'
+        : `${spotsLeft} of ${spotsTotal} spots`;
+
       return `
         <div class="job-card"
              data-job-id="${pos.position_id}"
@@ -874,7 +890,7 @@ async function loadInternships() {
 
           <div class="job-footer">
             <span style="font-size:0.8rem; color:var(--text-light);">
-              👥 ${pos.applications?.[0]?.count ?? 0} applied
+              👥 ${pos.applications?.[0]?.count ?? 0} applied &nbsp;·&nbsp; 🪑 ${spotsText}
             </span>
             <a href="internship-detail.html?id=${pos.position_id}" class="btn btn-small btn-primary" data-i18n="pages.internshipDetail.viewDetailsBtn">${t('pages.internshipDetail.viewDetailsBtn')}</a>
           </div>
