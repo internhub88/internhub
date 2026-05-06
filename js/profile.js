@@ -2328,6 +2328,27 @@ if (!appId || isNaN(numericId)) return;
       }
     }
 
+    // In-app notification for student on any status change
+    if (typeof createNotification === 'function') {
+      const studentId = document.getElementById('companyAppStudentId')?.value;
+      if (studentId) {
+        const { data: sp } = await supabaseClient
+          .from('student_profiles')
+          .select('user_id')
+          .eq('id', parseInt(studentId, 10))
+          .single();
+        if (sp?.user_id) {
+          const posTitle = document.getElementById('companyAppPosition')?.textContent || '';
+          createNotification(
+            sp.user_id,
+            'status_changed',
+            { position_title: posTitle, new_status: newStatus },
+            parseInt(appId, 10)
+          );
+        }
+      }
+    }
+
     console.log('[Email] newStatus:', newStatus, '| emailjs defined:', typeof emailjs !== 'undefined');
     if ((newStatus === 'accepted' || newStatus === 'rejected') && typeof emailjs !== 'undefined') {
       const studentId = document.getElementById('companyAppStudentId')?.value;
@@ -3175,14 +3196,41 @@ async function deleteApplication(applicationId) {
   if (!await showConfirm("Withdraw this application?", "Withdraw")) return;
 
   try {
-      const { error } = await supabaseClient
-          .from('applications')
-          .delete()
-          .eq('application_id', applicationId);
+    // Fetch position+company info before deleting for the notification
+    let companyUserId = null;
+    let posTitle = 'a position';
+    try {
+      const { data: appInfo } = await supabaseClient
+        .from('applications')
+        .select('position_id, positions(title, company_id)')
+        .eq('application_id', applicationId)
+        .single();
+      if (appInfo?.positions) {
+        posTitle = appInfo.positions.title || posTitle;
+        if (appInfo.positions.company_id) {
+          const { data: co } = await supabaseClient
+            .from('Companies')
+            .select('user_id')
+            .eq('company_id', appInfo.positions.company_id)
+            .single();
+          companyUserId = co?.user_id || null;
+        }
+      }
+    } catch (_) { /* non-fatal */ }
 
-      if (error) throw error;
-      showToast("Application withdrawn.", 'success');
-      loadStudentProfile();
+    const { error } = await supabaseClient
+        .from('applications')
+        .delete()
+        .eq('application_id', applicationId);
+
+    if (error) throw error;
+
+    if (companyUserId && typeof createNotification === 'function') {
+      createNotification(companyUserId, 'application_withdrawn', { position_title: posTitle });
+    }
+
+    showToast("Application withdrawn.", 'success');
+    loadStudentProfile();
   } catch (err) {
       showToast("Delete failed: " + err.message, 'error');
   }
