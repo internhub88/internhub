@@ -395,7 +395,10 @@ function fillTeamDisplay() {
         <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <p style="margin: 0; font-weight: 600; font-size: 1.1rem;">${member.name}</p>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <p style="margin: 0; font-weight: 600; font-size: 1.1rem;">${member.name}</p>
+                        ${member.is_responsible ? `<span style="font-size:0.72rem; background:#d1fae5; color:#065f46; padding:2px 8px; border-radius:20px; font-weight:600;">${t('companyProfile.memberResponsibleBadge') || '★ Responsible'}</span>` : ''}
+                    </div>
                     <p style="margin: 0.2rem 0; color: var(--primary-color); font-weight: 500;">${member.job_title}</p>
                     ${member.email ? `<p style="margin: 0; font-size: 0.85rem; color: var(--text-light);">📧 ${member.email}</p>` : ''}
                     ${member.phone ? `<p style="margin: 0; font-size: 0.85rem; color: var(--text-light);">📞 ${member.phone}</p>` : ''}
@@ -450,6 +453,8 @@ function hideAddMemberForm() {
     ['nmName', 'nmTitle', 'nmEmail', 'nmPhone'].forEach(id => {
         document.getElementById(id).value = '';
     });
+    const nmResp = document.getElementById('nmIsResponsible');
+    if (nmResp) nmResp.checked = false;
 }
 
 /**
@@ -474,6 +479,8 @@ function editTeamMember(memberId) {
   document.getElementById('nmTitle').value = member.job_title || '';
   document.getElementById('nmEmail').value = member.email || '';
   document.getElementById('nmPhone').value = member.phone || '';
+  const nmResp = document.getElementById('nmIsResponsible');
+  if (nmResp) nmResp.checked = !!member.is_responsible;
 
   const confirmBtn = document.querySelector('#newMemberForm button[onclick="saveNewTeamMember()"]');
   if (confirmBtn) confirmBtn.innerText = "Update Member";
@@ -494,15 +501,27 @@ async function saveNewTeamMember() {
         return;
     }
 
+    const isResponsible = document.getElementById('nmIsResponsible')?.checked || false;
+
     const memberData = {
         company_id: parseInt(currentProfile.company_id),
         name: name,
         job_title: title,
         email: email,
-        phone: phone
+        phone: phone,
+        is_responsible: isResponsible
     };
 
     try {
+        // If marking as responsible, unset any existing responsible member first
+        if (isResponsible) {
+            await supabaseClient
+                .from('company_team')
+                .update({ is_responsible: false })
+                .eq('company_id', parseInt(currentProfile.company_id));
+            currentTeam.forEach(m => { m.is_responsible = false; });
+        }
+
         if (editingMemberId) {
             // --- MODE: UPDATE ---
             const { data, error } = await supabaseClient
@@ -813,6 +832,7 @@ function openPostModal() {
   document.getElementById('pEnd').disabled = false;
   document.getElementById('pOpenEnded').checked = false;
   document.getElementById('pStatus').value = "active";
+  document.getElementById('pSpots').value = 1;
   positionSelectedCategoryIds = [];
   renderPosSelectedCategories();
   document.getElementById('pCategorySearch').value = "";
@@ -862,6 +882,7 @@ async function openEditModal(id) {
       document.getElementById('pRespon').value = data.responsibilities || "";
       document.getElementById('pReqs').value = data.requirements || "";
       document.getElementById('pStatus').value = data.status || "active";
+      document.getElementById('pSpots').value = data.spots_total ?? 1;
       document.getElementById('pStart').value = data.period_start || "";
       document.getElementById('pEnd').value = data.period_end || "";
       document.getElementById('pOpenEnded').checked = data.is_open_ended;
@@ -902,6 +923,7 @@ async function submitPosition() {
       responsibilities: document.getElementById('pRespon').value,
       requirements: document.getElementById('pReqs').value,
       salary: document.getElementById('pSalary').value.trim() || null,
+      spots_total: parseInt(document.getElementById('pSpots').value) || 1,
       status: document.getElementById('pStatus').value,
       period_start: document.getElementById('pStart').value || null,
       period_end: document.getElementById('pEnd').value || null,
@@ -1118,13 +1140,13 @@ async function loadCompanyPostings() {
   try {
       const { data: positions, error } = await supabaseClient
           .from('positions')
-          .select('position_id, title, status, requirements, period_start, period_end, applications(count), position_categories(category_id, job_categories(title, group_id))')
+          .select('position_id, title, status, requirements, period_start, period_end, spots_total, applications(count), position_categories(category_id, job_categories(title, group_id))')
           .eq('company_id', currentProfile.company_id)
           .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Auto-close any active positions that already have an accepted student
+      // Auto-close active positions only when accepted_count >= spots_total
       const activeIds = (positions || []).filter(p => p.status === 'active').map(p => p.position_id);
       if (activeIds.length > 0) {
           const { data: acceptedApps } = await supabaseClient
@@ -1132,7 +1154,20 @@ async function loadCompanyPostings() {
               .select('position_id')
               .eq('status', 'accepted')
               .in('position_id', activeIds);
-          const toClose = new Set((acceptedApps || []).map(a => a.position_id));
+
+          const acceptedCountMap = {};
+          (acceptedApps || []).forEach(a => {
+              acceptedCountMap[a.position_id] = (acceptedCountMap[a.position_id] || 0) + 1;
+          });
+
+          // Attach accepted count to each position for use in fillCompanyPostings
+          (positions || []).forEach(p => { p._acceptedCount = acceptedCountMap[p.position_id] || 0; });
+
+          const toClose = new Set(
+              (positions || [])
+                  .filter(p => p.status === 'active' && p._acceptedCount >= (p.spots_total || 1))
+                  .map(p => p.position_id)
+          );
           if (toClose.size > 0) {
               await supabaseClient.from('positions').update({ status: 'closed' }).in('position_id', [...toClose]);
               (positions || []).forEach(p => { if (toClose.has(p.position_id)) p.status = 'closed'; });
@@ -1182,6 +1217,12 @@ function fillCompanyPostings(positions) {
 
   container.innerHTML = toShow.length > 0 ? toShow.map(pos => {
           const appCount = pos.applications?.[0]?.count ?? 0;
+          const spotsTotal = pos.spots_total || 1;
+          const acceptedCount = pos._acceptedCount || 0;
+          const spotsLeft = spotsTotal - acceptedCount;
+          const spotsLabel = spotsTotal === 1
+              ? (spotsLeft <= 0 ? '0 spots left' : '1 spot')
+              : `${spotsLeft > 0 ? spotsLeft : 0} of ${spotsTotal} spots left`;
           const sc = statusColors[pos.status] || '';
           const cats = (pos.position_categories || [])
               .map(pc => `<span class="category-tag" style="font-size:0.75rem; padding:0.2rem 0.5rem;">${pc.job_categories?.title || ''}</span>`)
@@ -1205,6 +1246,7 @@ function fillCompanyPostings(positions) {
               </div>
               <div class="position-card-right">
                 <span class="status-badge" style="${sc}">${pos.status}</span>
+                <span style="font-size:0.78rem; color:var(--text-light); white-space:nowrap;">🪑 ${spotsLabel}</span>
                 <div class="pos-actions" id="pos-actions-${pos.position_id}">
                   <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">${t('companyProfile.posView')}</a>
                   <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">${t('companyProfile.posEdit')}</a>
@@ -2170,6 +2212,43 @@ async function saveCompanyApplicationStatus(newStatus) {
       const positionId = document.getElementById('companyAppPositionId')?.value;
       if (positionId) {
         await supabaseClient.from('positions').update({ status: 'closed' }).eq('position_id', parseInt(positionId, 10));
+      }
+    }
+
+    if ((newStatus === 'accepted' || newStatus === 'rejected') && typeof emailjs !== 'undefined') {
+      const studentId = document.getElementById('companyAppStudentId')?.value;
+      const positionTitle = document.getElementById('companyAppPosition')?.textContent || '';
+      if (studentId) {
+        const { data: studentInfo } = await supabaseClient
+          .from('student_profiles')
+          .select('first_name, last_name, Users:user_id(user_login)')
+          .eq('id', parseInt(studentId, 10))
+          .single();
+        const studentEmail = studentInfo?.Users?.user_login;
+        const studentName = [studentInfo?.first_name, studentInfo?.last_name].filter(Boolean).join(' ') || 'Student';
+        if (studentEmail) {
+          const responsible = currentTeam.find(m => m.is_responsible);
+          const companyEmail = currentProfile?.contact_email || '';
+          const companyName  = currentProfile?.company_name || '';
+          const contactBlock = responsible
+            ? `feel free to contact our manager:\n\n${responsible.name}${responsible.job_title ? ', ' + responsible.job_title : ''}\n${responsible.phone ? '📞 ' + responsible.phone + '\n' : ''}📧 ${responsible.email || companyEmail}`
+            : `feel free to contact us:\n\n📧 ${companyEmail}`;
+
+          const emailSubject = newStatus === 'accepted'
+            ? `Your application for ${positionTitle} at ${companyName} — Good news!`
+            : `Your application for ${positionTitle} at ${companyName}`;
+
+          const emailBody = newStatus === 'accepted'
+            ? `Hi ${studentName},\n\nWe have reviewed your application for the position of ${positionTitle} at ${companyName} and are happy to let you know that your candidacy has been approved!\n\nWe will be in touch with you shortly to schedule an interview.\n\nIf you have any questions in the meantime, ${contactBlock}\n\nWe look forward to speaking with you!\n\nBest regards,\n${companyName}`
+            : `Dear ${studentName},\n\nWe appreciate your interest in ${companyName} and the time you've invested in applying for the ${positionTitle} position.\n\nWe always strive to find candidates who best meet the requirements for a specific position and make decisions based on a variety of factors, including experience, skills and qualifications.\n\nYour CV has been reviewed carefully, but unfortunately we are unable to offer you a position in our company at this time. We always try to find some alternative, but right now there is nothing suitable.\n\nWe wish you to find your dream job!\n\nBest regards,\n${companyName} team`;
+
+          emailjs.send('service_gix61gn', 'template_app_accepted', {
+            to_email:      studentEmail,
+            email_subject: emailSubject,
+            email_body:    emailBody,
+            company_logo:  currentProfile?.logo_url?.split('?')[0] || ''
+          }).catch(err => console.error('[Email] status notification failed:', err));
+        }
       }
     }
 

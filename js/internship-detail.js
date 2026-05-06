@@ -95,25 +95,38 @@ async function loadInternshipDetail(positionId) {
         const companyNameEl = document.querySelector('.card-header .text-muted');
         if (companyNameEl) companyNameEl.textContent = company?.company_name || 'Unknown Company';
 
-        // EN: Applicant count is a nice-to-have badge — use a nested try so a
-        //     count query failure never prevents the rest of the page from rendering.
-        // FI: Hakijoiden määrä on mukava lisä-badge — käytetään sisäkkäistä try-lohkoa,
-        //     jotta laskentakyselyn epäonnistuminen ei estä muun sivun renderöintiä.
-        // Load and show application count on the detail page (non-fatal if it fails)
+        // Load application count and spots info — non-fatal if it fails
         try {
-            const { count: appCount, error: appError } = await supabaseClient
-                .from('applications')
-                .select('*', { count: 'exact', head: true })
-                .eq('position_id', normalizedPositionId);
+            const [
+                { count: appCount, error: appError },
+                { count: acceptedCount, error: accError }
+            ] = await Promise.all([
+                supabaseClient.from('applications').select('*', { count: 'exact', head: true }).eq('position_id', normalizedPositionId),
+                supabaseClient.from('applications').select('*', { count: 'exact', head: true }).eq('position_id', normalizedPositionId).eq('status', 'accepted')
+            ]);
 
             if (appError) throw appError;
 
             const countBadge = document.getElementById('applicationCountBadge');
             if (countBadge) countBadge.textContent = `👥 ${appCount ?? 0} applied`;
+
+            const spotsTotal = position.spots_total || 1;
+            const accepted = acceptedCount ?? 0;
+            const spotsLeft = spotsTotal - accepted;
+            const spotsBadge = document.getElementById('badgeSpots');
+            if (spotsBadge) {
+                if (spotsTotal === 1) {
+                    spotsBadge.textContent = accepted >= 1 ? '🪑 0 spots left' : '🪑 1 spot';
+                } else {
+                    spotsBadge.textContent = `🪑 ${spotsLeft > 0 ? spotsLeft : 0} of ${spotsTotal} spots`;
+                }
+            }
         } catch (appCountErr) {
             console.warn('Unable to load application count:', appCountErr);
             const countBadge = document.getElementById('applicationCountBadge');
             if (countBadge) countBadge.textContent = '👥 N/A';
+            const spotsBadge = document.getElementById('badgeSpots');
+            if (spotsBadge) spotsBadge.textContent = `🪑 ${position.spots_total || 1} spot${(position.spots_total || 1) !== 1 ? 's' : ''}`;
         }
 
         const bPublished = document.getElementById('badgePublished');
