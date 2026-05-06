@@ -2265,17 +2265,22 @@ async function saveCompanyApplicationStatus(newStatus) {
       }
     }
 
+    console.log('[Email] newStatus:', newStatus, '| emailjs defined:', typeof emailjs !== 'undefined');
     if ((newStatus === 'accepted' || newStatus === 'rejected') && typeof emailjs !== 'undefined') {
       const studentId = document.getElementById('companyAppStudentId')?.value;
       const positionTitle = document.getElementById('companyAppPosition')?.textContent || '';
+      console.log('[Email] studentId:', studentId);
+      console.log('[Email] positionTitle:', positionTitle);
       if (studentId) {
-        const { data: studentInfo } = await supabaseClient
+        const { data: studentInfo, error: studentError } = await supabaseClient
           .from('student_profiles')
           .select('first_name, last_name, Users:user_id(user_login)')
           .eq('id', parseInt(studentId, 10))
           .single();
+        console.log('[Email] studentInfo:', studentInfo, 'error:', studentError);
         const studentEmail = studentInfo?.Users?.user_login;
         const studentName = [studentInfo?.first_name, studentInfo?.last_name].filter(Boolean).join(' ') || 'Student';
+        console.log('[Email] studentEmail:', studentEmail, 'studentName:', studentName);
         if (studentEmail) {
           const responsible = currentTeam.find(m => m.is_responsible);
           const companyEmail = currentProfile?.contact_email || '';
@@ -2339,10 +2344,11 @@ let _acceptModalData = {};   // { applicationId, studentName, studentEmail, posi
 
 function openAcceptModalFromReview() {
   // Read data from the currently open companyAppModal
-  const appId    = document.getElementById('companyAppId').value;
-  const name     = document.getElementById('companyAppName').textContent;
-  const email    = document.getElementById('companyAppEmail').textContent;
-  const position = document.getElementById('companyAppPosition').textContent;
+  const appId     = document.getElementById('companyAppId').value;
+  const name      = document.getElementById('companyAppName').textContent;
+  const email     = document.getElementById('companyAppEmail').textContent;
+  const position  = document.getElementById('companyAppPosition').textContent;
+  const studentId = document.getElementById('companyAppStudentId')?.value || '';
 
   console.log('openAcceptModalFromReview — appId:', appId, 'name:', name);
 
@@ -2354,6 +2360,7 @@ function openAcceptModalFromReview() {
     applicationId: appId,
     studentName:   name,
     studentEmail:  email,
+    studentId:     studentId,
     positionTitle: position,
   };
 
@@ -2479,12 +2486,62 @@ async function saveAcceptDecision(dateValue) {
       window.open(calUrl, '_blank');
     } else {
       showToast('Application accepted!', 'success');
+      sendApplicationStatusEmail(_acceptModalData.studentId, positionTitle, 'accepted', null);
     }
 
+    document.querySelectorAll('[id^="pos-apps-"]').forEach(el => delete el.dataset.loaded);
+    const openPanels = document.querySelectorAll('[id^="pos-apps-"][data-open="true"]');
+    openPanels.forEach(panel => {
+      const pid = panel.id.replace('pos-apps-', '');
+      fetchPositionApplicants(pid, panel);
+    });
     await loadCompanyApplications();
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
   }
+}
+
+async function sendApplicationStatusEmail(studentId, positionTitle, status, companyResponse) {
+  console.log('[Email] sendApplicationStatusEmail called:', { studentId, positionTitle, status, companyName: currentProfile?.company_name });
+  if (typeof emailjs === 'undefined') { console.warn('[Email] emailjs not loaded'); return; }
+  if (!studentId) { console.warn('[Email] no studentId'); return; }
+
+  const { data: studentInfo, error } = await supabaseClient
+    .from('student_profiles')
+    .select('first_name, last_name, Users:user_id(user_login)')
+    .eq('id', parseInt(studentId, 10))
+    .single();
+
+  if (error || !studentInfo) { console.warn('[Email] student fetch failed', error); return; }
+
+  const studentEmail = studentInfo?.Users?.user_login;
+  if (!studentEmail) { console.warn('[Email] no student email'); return; }
+
+  const studentName  = [studentInfo.first_name, studentInfo.last_name].filter(Boolean).join(' ') || 'Student';
+  const companyName  = currentProfile?.company_name || '';
+  const companyEmail = currentProfile?.contact_email || '';
+  const responsible  = currentTeam.find(m => m.is_responsible);
+
+  const contactBlock = responsible
+    ? `feel free to contact our manager:\n\n${responsible.name}${responsible.job_title ? ', ' + responsible.job_title : ''}\n${responsible.phone ? '📞 ' + responsible.phone + '\n' : ''}📧 ${responsible.email || companyEmail}`
+    : `feel free to contact us:\n\n📧 ${companyEmail}`;
+
+  const emailSubject = status === 'accepted'
+    ? `Your application for ${positionTitle} at ${companyName} — Good news!`
+    : `Your application for ${positionTitle} at ${companyName}`;
+
+  const emailBody = status === 'accepted'
+    ? `Hi ${studentName},\n\nWe have reviewed your application for the position of ${positionTitle} at ${companyName} and are happy to let you know that your candidacy has been approved!\n\nWe will be in touch with you shortly to schedule an interview.\n\nIf you have any questions in the meantime, ${contactBlock}\n\nWe look forward to speaking with you!\n\nBest regards,\n${companyName}`
+    : `Dear ${studentName},\n\nWe appreciate your interest in ${companyName} and the time you've invested in applying for the ${positionTitle} position.\n\nWe always strive to find candidates who best meet the requirements for a specific position and make decisions based on a variety of factors, including experience, skills and qualifications.\n\nYour CV has been reviewed carefully, but unfortunately we are unable to offer you a position in our company at this time. We always try to find some alternative, but right now there is nothing suitable.\n\nWe wish you to find your dream job!\n\nBest regards,\n${companyName} team`;
+
+  emailjs.send('service_gix61gn', 'template_app_accepted', {
+    to_email:      studentEmail,
+    email_subject: emailSubject,
+    email_body:    emailBody,
+    company_logo:  currentProfile?.logo_url?.split('?')[0] || ''
+  })
+    .then(() => console.log('[Email] sent to', studentEmail))
+    .catch(err => console.error('[Email] send failed:', err));
 }
 
 function updateDeclineCounter(textarea) {
@@ -2552,6 +2609,15 @@ async function confirmDecline() {
     if (error) throw error;
 
     showToast('Application declined.', 'success');
+    const studentId     = document.getElementById('companyAppStudentId')?.value;
+    const positionTitle = document.getElementById('companyAppPosition')?.textContent || '';
+    sendApplicationStatusEmail(studentId, positionTitle, 'rejected', response || null);
+    document.querySelectorAll('[id^="pos-apps-"]').forEach(el => delete el.dataset.loaded);
+    const openPanels = document.querySelectorAll('[id^="pos-apps-"][data-open="true"]');
+    openPanels.forEach(panel => {
+      const pid = panel.id.replace('pos-apps-', '');
+      fetchPositionApplicants(pid, panel);
+    });
     await loadCompanyApplications();
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
