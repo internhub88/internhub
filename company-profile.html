@@ -838,8 +838,19 @@
           <p id="companyAppCvLink" style="margin:0;"></p>
         </div>
 
-        <div class="form-group" style="margin:0;">
-          <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Response message</label>
+                <div class="form-group" style="margin:0;">
+  <label style="display:block; font-weight:600; margin-bottom:0.25rem;">
+    🔒 Private Notes
+    <span style="font-size:0.78rem; font-weight:400; color:#9ca3af;">(only you can see this)</span>
+  </label>
+  <textarea id="companyAppNotes" rows="3"
+            style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px;
+                   font-family:inherit; resize:vertical; background:#fffbeb;"></textarea>
+</div>
+
+        <div class="form-group"  id="companyAppResponseWrap" style="margin:0;">
+          <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Response message
+            <span style="font-size:0.78rem; font-weight:400; color:#9ca3af;">(student will see this)</span></label>
           <textarea id="companyAppResponse" rows="5" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-family:inherit; resize:vertical;"></textarea>
         </div>
       </div>

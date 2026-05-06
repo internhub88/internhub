@@ -1151,7 +1151,7 @@ footer {
 .sidebar {
   flex: 0 0 240px;
   width: 240px;
-  position: sticky;
+  position: grid;
   top: 80px;
   align-self: flex-start;
 }

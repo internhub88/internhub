@@ -1837,6 +1837,8 @@ function openCompanyAppModal(app) {
 
   document.getElementById('companyAppId').value = app.application_id;
 
+  document.getElementById('companyAppNotes').dataset.appId = app.application_id;
+
   const studentIdEl = document.getElementById('companyAppStudentId');
   if (studentIdEl) studentIdEl.value = app.student_id || '';
 
@@ -1861,8 +1863,65 @@ document.getElementById('companyAppEmail').textContent =
   }
 
   document.getElementById('companyAppResponse').value = app.company_response || '';
-  modal.style.display = 'block';
+
+  const responseWrap = document.getElementById('companyAppResponseWrap');
+if (responseWrap) {
+  responseWrap.style.display = app.status === 'rejected' ? 'block' : 'none';
 }
+  // Load fresh notes from DB so we always show the latest saved value
+const notesField = document.getElementById('companyAppNotes');
+notesField.value = app.notes || '';  // show cached value immediately
+modal.style.display = 'block';
+
+// Then fetch fresh notes in the background and update if different
+supabaseClient
+  .from('applications')
+  .select('notes')
+  .eq('application_id', app.application_id)
+  .single()
+  .then(({ data }) => {
+    if (data && data.notes !== null && data.notes !== undefined) {
+      notesField.value = data.notes;
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+  // --- existing decline counter code stays here ---
+
+  // Auto-save private notes when company clicks away from the field
+  const notesField = document.getElementById('companyAppNotes');
+  if (notesField) {
+   notesField.addEventListener('blur', async function () {
+  const numericId = parseInt(this.dataset.appId, 10);
+  if (!numericId || isNaN(numericId)) return;
+
+      const notes = this.value.trim();
+
+      try {
+        const { error } = await supabaseClient
+  .from('applications')
+  .update({ notes: this.value.trim() || null })
+  .eq('application_id', numericId);
+
+        if (error) {
+  console.error('Full error:', JSON.stringify(error));
+  throw error;
+}
+
+        // Small visual feedback — no toast, just a subtle indicator
+        this.style.borderColor = '#10b981';
+        setTimeout(() => { this.style.borderColor = '#d1d5db'; }, 1500);
+
+      } catch (err) {
+        this.style.borderColor = '#dc2626';
+        showToast('Failed to save notes: ' + err.message, 'error');
+      }
+    });
+  }
+
+});
 
 /**
  * EN: Opens a read-only modal showing a student's full profile to a company
@@ -2140,16 +2199,19 @@ async function _refreshPositionApplicants(positionId) {
  */
 async function saveCompanyApplicationStatus(newStatus) {
   const appId = document.getElementById('companyAppId').value;
-  const response = document.getElementById('companyAppResponse').value;
-  const modal = document.getElementById('companyAppModal');
+const numericId = parseInt(appId, 10);
+const response = document.getElementById('companyAppResponse').value;
+const modal = document.getElementById('companyAppModal');
 
-  if (!appId) return;
+if (!appId || isNaN(numericId)) return;
 
   try {
     const updatedData = {
-      status: newStatus,
-      updated_at: new Date().toISOString(),
-    };
+  status:           newStatus,
+  company_response: document.getElementById('companyAppResponse').value,
+  notes:            document.getElementById('companyAppNotes').value,
+  updated_at:       new Date().toISOString(),
+};
 
     if (response !== undefined) {
       updatedData.company_response = response;
@@ -2158,7 +2220,7 @@ async function saveCompanyApplicationStatus(newStatus) {
     const { error } = await supabaseClient
       .from('applications')
       .update(updatedData)
-      .eq('application_id', parseInt(appId, 10));
+      .eq('application_id', numericId);
 
     if (error) {
       console.error('Company application update error:', error);
@@ -2401,9 +2463,11 @@ function closeDeclineModal() {
 
 async function confirmDecline() {
   const appId    = document.getElementById('companyAppId').value;
-  const response = document.getElementById('declineResponseText').value.trim();
+const numericId = parseInt(appId, 10);
+const response = document.getElementById('declineResponseText').value.trim();
+const notes    = document.getElementById('companyAppNotes').value.trim();
 
-  if (!appId) {
+if (!appId || isNaN(numericId)) {
     showToast('Error: no application selected.', 'error');
     return;
   }
@@ -2416,12 +2480,12 @@ async function confirmDecline() {
       .update({
         status:           'rejected',
         company_response: response || null,
+        notes:            notes    || null,
         updated_at:       new Date().toISOString(),
       })
-      .eq('application_id', parseInt(appId, 10));
+      .eq('application_id', numericId);
 
     if (error) throw error;
-
     showToast('Application declined.', 'success');
     await loadCompanyApplications();
   } catch (err) {
