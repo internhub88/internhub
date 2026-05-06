@@ -2,7 +2,7 @@
 
 A full-stack internship search platform connecting students with companies. Built with plain HTML/CSS/JavaScript on the frontend and Supabase (PostgreSQL + Auth + Storage) on the backend. Deployed on Vercel.
 
-**Live demo:** https://internship-search-app-project.vercel.app
+**Live demo:** https://internhub-lac.vercel.app
 
 ---
 
