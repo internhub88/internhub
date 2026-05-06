@@ -51,7 +51,7 @@
   <!-- FI: Takaisin-painike — siirtyy internships.html:ään ilman sivun uudelleenlatausta -->
   <section class="section" style="padding: 1rem 0;">
     <div class="container">
-      <a href="internships.html" class="text-primary" style="font-weight: 500;">← Back to Internships</a>
+      <a href="#" onclick="history.length > 1 ? history.back() : (location.href='internships.html'); return false;" class="text-primary" style="font-weight: 500;" data-i18n="pages.detail.backLink">← Back</a>
     </div>
   </section>
 
@@ -91,6 +91,7 @@
                     <span id="badgeDuration" class="badge badge-secondary">Duration</span>
                     <span id="badgeSalary" class="badge badge-success">Salary</span>
                     <span id="applicationCountBadge" class="badge" style="background:#f3f4f6; color:#374151;">👥 Loading...</span>
+                    <span id="badgeSpots" class="badge" style="background:#ede9fe; color:#5b21b6;">🪑 Loading...</span>
                     <span id="badgePublished" class="badge date-published"></span>
                     <span id="badgeStatus" class="badge status-closed" style="display:none;">🔒 Position Closed</span>
                   </div>

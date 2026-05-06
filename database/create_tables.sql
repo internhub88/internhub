@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS positions (
     period_start    DATE,
     period_end      DATE,
     is_open_ended   BOOLEAN NOT NULL DEFAULT FALSE,
+    spots_total     INTEGER NOT NULL DEFAULT 1,
     status          VARCHAR(20) NOT NULL DEFAULT 'active'
                         CHECK (status IN ('active', 'closed', 'draft')),
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),

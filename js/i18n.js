@@ -120,7 +120,7 @@ const TRANSLATIONS = {
       noResultsTitle: 'No internships found', noResultsDesc: 'Try adjusting your search filters'
     },
     detail: {
-      backLink: '← Back to Internships',
+      backLink: '← Back',
       overviewTitle: 'Job Overview',
       salaryLabel: 'SALARY', durationLabel: 'DURATION', locationLabel: 'LOCATION',
       aboutTitle: 'About Us', descTitle: 'Description',
@@ -176,7 +176,7 @@ const TRANSLATIONS = {
       businessIdLabel: 'Business ID (Y-Tunnus)', businessIdReadOnly: 'Business ID cannot be changed after registration.', websiteLabel: 'Website',
       teamTitle: 'Our Team', btnAddMember: '➕ Add New Member',
       memberNamePlaceholder: 'Full Name', memberTitlePlaceholder: 'Job Title (e.g. CEO)',
-      memberEmailPlaceholder: 'Email Address', memberPhonePlaceholder: 'Phone Number',
+      memberEmailPlaceholder: 'Email Address', memberPhonePlaceholder: 'Phone Number', memberIsResponsible: 'Responsible contact for applications', memberResponsibleBadge: '★ Responsible',
       btnConfirmAdd: 'Confirm Add', teamEmpty: 'No team members listed.',
       postingsTitle: 'Current Postings', postingsEmpty: 'No postings yet.',
       postSidebarTitle: 'Post New Job', postSidebarDesc: 'Create a new internship listing.',
@@ -184,7 +184,10 @@ const TRANSLATIONS = {
       postModalTitle: 'Create New Internship',
       postTitleLabel: 'Job Title *', postDescLabel: 'Description *',
       postResponLabel: 'Responsibilities', postReqsLabel: 'Requirements',
-      postSalaryLabel: 'Salary / Compensation', postStartLabel: 'Start Date', postEndLabel: 'End Date',
+      postSalaryLabel: 'Salary / Compensation',
+      postSpotsLabel: 'Number of Spots', postSpotsHint: 'How many interns can be accepted for this position',
+      spotsOne: '1 spot', spotsNone: '0 spots left', spotsOf: '{left} of {total} spots',
+      postStartLabel: 'Start Date', postEndLabel: 'End Date',
       postOpenEnded: 'This position is open-ended (no fixed end date)',
       postCategoryLabel: 'Category *', postCategoryDefault: 'Select a category...',
       postVisibilityLabel: 'Visibility',
@@ -194,7 +197,7 @@ const TRANSLATIONS = {
       appEmailLabel: 'Email:', appPhoneLabel: 'Phone:', appStatusLabel: 'Status:',
       appLetterLabel: 'Cover Letter', appLetterEmpty: 'No cover letter provided.',
       appCvLabel: 'CV / Resume',
-      btnAccept: 'Accept', btnDecline: 'Decline', btnViewed: 'Mark Viewed', btnClose: 'Close',
+      btnAccept: 'Accept', btnRevoke: 'Revoke', btnDecline: 'Decline', btnViewed: 'Mark Viewed', btnClose: 'Close',
       posView: 'View', posEdit: 'Edit', posDelete: 'Delete',
       posApplications: 'Applications', posShowMore: 'Show more', posShowLess: 'Show less',
       matchFindBtn: '🔍 Find matching students',
@@ -624,7 +627,7 @@ const TRANSLATIONS = {
       noResultsTitle: 'Harjoittelupaikkoja ei löydy', noResultsDesc: 'Kokeile muuttaa hakusuodattimia'
     },
     detail: {
-      backLink: '← Takaisin harjoittelupaikkoihin',
+      backLink: '← Takaisin',
       overviewTitle: 'Työn yleiskatsaus',
       salaryLabel: 'PALKKA', durationLabel: 'KESTO', locationLabel: 'SIJAINTI',
       aboutTitle: 'Meistä', descTitle: 'Kuvaus',
@@ -680,7 +683,7 @@ const TRANSLATIONS = {
       businessIdLabel: 'Y-tunnus', businessIdReadOnly: 'Y-tunnusta ei voi muuttaa rekisteröinnin jälkeen.', websiteLabel: 'Verkkosivusto',
       teamTitle: 'Tiimimme', btnAddMember: '➕ Lisää uusi jäsen',
       memberNamePlaceholder: 'Koko nimi', memberTitlePlaceholder: 'Toimenkuva (esim. toimitusjohtaja)',
-      memberEmailPlaceholder: 'Sähköpostiosoite', memberPhonePlaceholder: 'Puhelinnumero',
+      memberEmailPlaceholder: 'Sähköpostiosoite', memberPhonePlaceholder: 'Puhelinnumero', memberIsResponsible: 'Vastuuhenkilö hakemuksille', memberResponsibleBadge: '★ Vastuuhenkilö',
       btnConfirmAdd: 'Vahvista lisäys', teamEmpty: 'Ei tiimin jäseniä.',
       postingsTitle: 'Nykyiset ilmoitukset', postingsEmpty: 'Ei vielä ilmoituksia.',
       postSidebarTitle: 'Ilmoita uusi työ', postSidebarDesc: 'Luo uusi harjoitteluilmoitus.',
@@ -688,7 +691,10 @@ const TRANSLATIONS = {
       postModalTitle: 'Luo uusi harjoittelupaikka',
       postTitleLabel: 'Työnimike *', postDescLabel: 'Kuvaus *',
       postResponLabel: 'Vastuualueet', postReqsLabel: 'Vaatimukset',
-      postSalaryLabel: 'Palkka / Korvaus', postStartLabel: 'Aloituspäivä', postEndLabel: 'Lopetuspäivä',
+      postSalaryLabel: 'Palkka / Korvaus',
+      postSpotsLabel: 'Paikkojen määrä', postSpotsHint: 'Kuinka monta harjoittelijaa voidaan hyväksyä tälle paikalle',
+      spotsOne: '1 paikka', spotsNone: '0 paikkaa jäljellä', spotsOf: '{left} / {total} paikkaa',
+      postStartLabel: 'Aloituspäivä', postEndLabel: 'Lopetuspäivä',
       postOpenEnded: 'Tämä paikka on avoinna toistaiseksi (ei kiinteää päättymispäivää)',
       postCategoryLabel: 'Kategoria *', postCategoryDefault: 'Valitse kategoria...',
       postVisibilityLabel: 'Näkyvyys',
@@ -698,7 +704,7 @@ const TRANSLATIONS = {
       appEmailLabel: 'Sähköposti:', appPhoneLabel: 'Puhelin:', appStatusLabel: 'Tila:',
       appLetterLabel: 'Saatekirje', appLetterEmpty: 'Saatekirjettä ei ole toimitettu.',
       appCvLabel: 'CV / Ansioluettelo',
-      btnAccept: 'Hyväksy', btnDecline: 'Hylkää', btnViewed: 'Merkitse nähdyksi', btnClose: 'Sulje',
+      btnAccept: 'Hyväksy', btnRevoke: 'Peruuta', btnDecline: 'Hylkää', btnViewed: 'Merkitse nähdyksi', btnClose: 'Sulje',
       posView: 'Näytä', posEdit: 'Muokkaa', posDelete: 'Poista',
       posApplications: 'Hakemukset', posShowMore: 'Näytä lisää', posShowLess: 'Näytä vähemmän',
       matchFindBtn: '🔍 Etsi sopivia opiskelijoita',
@@ -1123,7 +1129,7 @@ const TRANSLATIONS = {
       noResultsTitle: 'Inga praktikplatser hittades', noResultsDesc: 'Försök justera dina sökfilter'
     },
     detail: {
-      backLink: '← Tillbaka till praktikplatser',
+      backLink: '← Tillbaka',
       overviewTitle: 'Jobböversikt',
       salaryLabel: 'LÖN', durationLabel: 'VARAKTIGHET', locationLabel: 'PLATS',
       aboutTitle: 'Om oss', descTitle: 'Beskrivning',
@@ -1179,7 +1185,7 @@ const TRANSLATIONS = {
       businessIdLabel: 'Y-tunnus', businessIdReadOnly: 'Y-tunnus kan inte ändras efter registrering.', websiteLabel: 'Webbplats',
       teamTitle: 'Vårt team', btnAddMember: '➕ Lägg till ny medlem',
       memberNamePlaceholder: 'Fullständigt namn', memberTitlePlaceholder: 'Jobbtitel (t.ex. VD)',
-      memberEmailPlaceholder: 'E-postadress', memberPhonePlaceholder: 'Telefonnummer',
+      memberEmailPlaceholder: 'E-postadress', memberPhonePlaceholder: 'Telefonnummer', memberIsResponsible: 'Ansvarig kontakt för ansökningar', memberResponsibleBadge: '★ Ansvarig',
       btnConfirmAdd: 'Bekräfta tillägg', teamEmpty: 'Inga teammedlemmar listade.',
       postingsTitle: 'Aktuella annonser', postingsEmpty: 'Inga annonser ännu.',
       postSidebarTitle: 'Publicera nytt jobb', postSidebarDesc: 'Skapa en ny praktikannons.',
@@ -1187,7 +1193,10 @@ const TRANSLATIONS = {
       postModalTitle: 'Skapa ny praktikplats',
       postTitleLabel: 'Jobbtitel *', postDescLabel: 'Beskrivning *',
       postResponLabel: 'Ansvarsområden', postReqsLabel: 'Krav',
-      postSalaryLabel: 'Lön / Ersättning', postStartLabel: 'Startdatum', postEndLabel: 'Slutdatum',
+      postSalaryLabel: 'Lön / Ersättning',
+      postSpotsLabel: 'Antal platser', postSpotsHint: 'Hur många praktikanter kan accepteras för denna tjänst',
+      spotsOne: '1 plats', spotsNone: '0 platser kvar', spotsOf: '{left} av {total} platser',
+      postStartLabel: 'Startdatum', postEndLabel: 'Slutdatum',
       postOpenEnded: 'Denna tjänst är tillsvidare (inget fast slutdatum)',
       postCategoryLabel: 'Kategori *', postCategoryDefault: 'Välj en kategori...',
       postVisibilityLabel: 'Synlighet',
@@ -1197,7 +1206,7 @@ const TRANSLATIONS = {
       appEmailLabel: 'E-post:', appPhoneLabel: 'Telefon:', appStatusLabel: 'Status:',
       appLetterLabel: 'Personligt brev', appLetterEmpty: 'Inget personligt brev bifogat.',
       appCvLabel: 'CV / Meritförteckning',
-      btnAccept: 'Acceptera', btnDecline: 'Avböj', btnViewed: 'Markera som sedd', btnClose: 'Stäng',
+      btnAccept: 'Acceptera', btnRevoke: 'Återkalla', btnDecline: 'Avböj', btnViewed: 'Markera som sedd', btnClose: 'Stäng',
       posView: 'Visa', posEdit: 'Redigera', posDelete: 'Ta bort',
       posApplications: 'Ansökningar', posShowMore: 'Visa mer', posShowLess: 'Visa mindre',
       matchFindBtn: '🔍 Hitta matchande studenter',
@@ -1519,6 +1528,16 @@ function t(key) {
   let fallback = TRANSLATIONS.en;
   for (const k of keys) fallback = fallback?.[k];
   return fallback ?? key;
+}
+
+function tSpots(spotsLeft, spotsTotal) {
+  const accepted = spotsTotal - spotsLeft;
+  if (spotsTotal === 1) {
+    return accepted >= 1 ? t('companyProfile.spotsNone') : t('companyProfile.spotsOne');
+  }
+  return t('companyProfile.spotsOf')
+    .replace('{left}', spotsLeft > 0 ? spotsLeft : 0)
+    .replace('{total}', spotsTotal);
 }
 
 function setLanguage(lang) {

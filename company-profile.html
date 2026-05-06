@@ -326,9 +326,15 @@
             <input type="email" id="nmEmail" placeholder="Email Address" class="form-control" data-i18n-placeholder="companyProfile.memberEmailPlaceholder">
             <input type="text" id="nmPhone" placeholder="Phone Number" class="form-control" data-i18n-placeholder="companyProfile.memberPhonePlaceholder">
         </div>
-        <div style="margin-top: 10px; display: flex; gap: 10px;">
-            <button type="button" class="btn btn-small btn-primary" onclick="saveNewTeamMember()" data-i18n="companyProfile.btnConfirmAdd">Confirm Add</button>
-            <button type="button" class="btn btn-small" style="background:#ccc;" onclick="hideAddMemberForm()" data-i18n="companyProfile.btnCancel">Cancel</button>
+        <div style="margin-top: 10px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; margin-bottom:10px;">
+                <input type="checkbox" id="nmIsResponsible" style="width:16px; height:16px; cursor:pointer;">
+                <span data-i18n="companyProfile.memberIsResponsible">Responsible contact for applications</span>
+            </label>
+            <div style="display:flex; gap:10px;">
+                <button type="button" class="btn btn-small btn-primary" onclick="saveNewTeamMember()" data-i18n="companyProfile.btnConfirmAdd">Confirm Add</button>
+                <button type="button" class="btn btn-small" style="background:#ccc;" onclick="hideAddMemberForm()" data-i18n="companyProfile.btnCancel">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -506,6 +512,12 @@
         <input type="text" id="pSalary" class="form-control" placeholder="e.g., 2000€/month or Negotiable">
     </div>
 
+      <div class="form-group">
+        <label data-i18n="companyProfile.postSpotsLabel">Number of Spots</label>
+        <input type="number" id="pSpots" class="form-control" min="1" max="100" value="1" placeholder="1">
+        <small style="color:var(--text-light); font-size:0.78rem;" data-i18n="companyProfile.postSpotsHint">How many interns can be accepted for this position</small>
+      </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
                 <label data-i18n="companyProfile.postStartLabel">Start Date</label>
@@ -641,7 +653,9 @@
            Inline DOMContentLoaded: kutsuu loadCompanyProfile():ia 200 ms:n viiveellä antaakseen
            supabaseClient:lle aikaa alustua täysin ennen ensimmäistä Supabase-kyselyä.
        ──────────────────────────────────────────────────────── -->
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>(function() { if (typeof emailjs !== 'undefined') emailjs.init("JI1iX7kMcKuHQBrGW"); })();</script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/profile.js"></script>
@@ -861,7 +875,7 @@
         onclick="openAcceptModalFromReview()">
   Accept
 </button>
-        <button class="btn btn-danger" onclick="openDeclineModal()">Decline</button>
+        <button id="companyAppDeclineBtn" class="btn btn-danger" onclick="openDeclineModal()">Decline</button>
         <button class="btn btn-outline" onclick="saveCompanyApplicationStatus('viewed')" data-i18n="companyProfile.btnViewed">Mark Viewed</button>
         <button class="btn btn-secondary" onclick="document.getElementById('companyAppModal').style.display='none'" data-i18n="companyProfile.btnClose">Close</button>
       </div>
