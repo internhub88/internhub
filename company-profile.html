@@ -194,14 +194,12 @@
                • #editActionButtons — piilotettu näyttötilassa; näkyy muokkaustilassa.
                  Sisältää "Save" (saveCompanyProfile() → UPDATE Companies SET ...) ja
                  "Cancel" (toggleCompanyEdit(false) → palaa näyttötilaan tallentamatta). -->
-      <div>
-        <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)" data-i18n="companyProfile.btnEdit">Edit Profile</button>
-        <div id="editActionButtons" style="display: none; gap: 0.5rem;">
-          <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()" data-i18n="companyProfile.btnSave">Save</button>
-          <button class="btn btn-small btn-secondary" onclick="toggleCompanyEdit(false)" data-i18n="companyProfile.btnCancel">Cancel</button>
-        </div>
-      </div>
     </div>
+    <div style="text-align: right; margin-bottom: 2rem;">
+              <button class="btn btn-small btn-primary" id="editProfileBtn" onclick="enterEditMode()" data-i18n="studentProfile.btnEdit">Edit Profile</button>
+              <button class="btn btn-small btn-primary" id="saveProfileBtn" onclick="saveProfile()" style="display:none;" data-i18n="studentProfile.btnSave">Save</button>
+              <button class="btn btn-small btn-secondary" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;" data-i18n="studentProfile.btnCancel">Cancel</button>
+            </div>
 
     <!-- EN: #companyDisplayAbout — read-only "About Company" block.
              #dCompanyDesc is populated from Companies.description by loadCompanyProfile().
