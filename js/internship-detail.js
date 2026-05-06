@@ -1105,7 +1105,7 @@ function toLocalInputValue(date) {
  */
 async function cancelInterviewDetail() {
   const modal = document.getElementById('interviewDateModal');
-  const { applicationId } = modal._data;
+  const { applicationId, positionTitle } = modal._data;
   modal.style.display = 'none';
   try {
     const { error } = await supabaseClient
@@ -1114,6 +1114,11 @@ async function cancelInterviewDetail() {
       .eq('application_id', applicationId);
     if (error) throw error;
     showToast('Interview cancelled.', 'info');
+    if (typeof createNotification === 'function' && typeof _getStudentUserIdByApp === 'function') {
+      _getStudentUserIdByApp(applicationId).then(uid => {
+        if (uid) createNotification(uid, 'status_changed', { position_title: positionTitle || '', new_status: 'interview_cancelled' }, applicationId);
+      });
+    }
     if (window.currentPosition) {
       await checkOwnerAndLoadApplicants(window.currentPosition.company_id, window.currentPosition.position_id);
     }
@@ -1151,6 +1156,11 @@ async function confirmInterviewScheduleDetail() {
       .eq('application_id', applicationId);
     if (error) throw error;
     showToast('Interview scheduled!', 'success');
+    if (typeof createNotification === 'function' && typeof _getStudentUserIdByApp === 'function') {
+      _getStudentUserIdByApp(applicationId).then(uid => {
+        if (uid) createNotification(uid, 'status_changed', { position_title: positionTitle, new_status: 'interview_scheduled' }, applicationId);
+      });
+    }
     if (window.currentPosition) {
       await checkOwnerAndLoadApplicants(window.currentPosition.company_id, window.currentPosition.position_id);
     }

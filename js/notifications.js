@@ -23,6 +23,17 @@ async function createNotification(recipientUserId, type, metadata = {}, applicat
   }
 }
 
+async function _getStudentUserIdByApp(applicationId) {
+  try {
+    const { data } = await supabaseClient
+      .from('applications')
+      .select('student_profiles(user_id)')
+      .eq('application_id', applicationId)
+      .single();
+    return data?.student_profiles?.user_id || null;
+  } catch (_) { return null; }
+}
+
 function _renderMessage(type, meta) {
   const m = meta || {};
   const pos = m.position_title ? `"${_escHtml(m.position_title)}"` : 'a position';
@@ -33,11 +44,12 @@ function _renderMessage(type, meta) {
       return `Application for ${pos} was withdrawn`;
     case 'status_changed': {
       const labels = {
-        accepted:  'accepted 🎉',
-        rejected:  'declined',
-        viewed:    'viewed by company',
-        pending:   'moved back to pending',
-        interview: 'interview scheduled',
+        accepted:             'accepted 🎉',
+        rejected:             'declined',
+        viewed:               'viewed by company',
+        pending:              'moved back to pending',
+        interview_scheduled:  'invited for an interview 📅',
+        interview_cancelled:  'interview cancelled',
       };
       const label = labels[m.new_status] || m.new_status || 'updated';
       return `Your application for ${pos} was ${label}`;

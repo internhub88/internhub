@@ -1819,7 +1819,7 @@ function scheduleInterviewProfile(fullName, email, positionTitle, applicationId,
  */
 async function cancelInterviewProfile() {
   const modal = document.getElementById('interviewDateModal');
-  const { applicationId } = modal._data;
+  const { applicationId, positionTitle } = modal._data;
   modal.style.display = 'none';
   try {
     const { error } = await supabaseClient
@@ -1828,6 +1828,11 @@ async function cancelInterviewProfile() {
       .eq('application_id', applicationId);
     if (error) throw error;
     showToast('Interview cancelled.', 'info');
+    if (typeof createNotification === 'function' && typeof _getStudentUserIdByApp === 'function') {
+      _getStudentUserIdByApp(applicationId).then(uid => {
+        if (uid) createNotification(uid, 'status_changed', { position_title: positionTitle || '', new_status: 'interview_cancelled' }, applicationId);
+      });
+    }
     await loadCompanyApplications();
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
@@ -1868,6 +1873,11 @@ async function confirmInterviewSchedule() {
       .eq('application_id', applicationId);
     if (error) throw error;
     showToast('Interview scheduled!', 'success');
+    if (typeof createNotification === 'function' && typeof _getStudentUserIdByApp === 'function') {
+      _getStudentUserIdByApp(applicationId).then(uid => {
+        if (uid) createNotification(uid, 'status_changed', { position_title: positionTitle, new_status: 'interview_scheduled' }, applicationId);
+      });
+    }
     await loadCompanyApplications();
   } catch (err) {
     showToast('Error saving: ' + err.message, 'error');
@@ -2557,6 +2567,15 @@ async function saveAcceptDecision(dateValue) {
       .eq('application_id', appId);
 
     if (error) throw error;
+
+    // In-app notification for student
+    if (typeof createNotification === 'function' && _acceptModalData.studentId) {
+      supabaseClient.from('student_profiles').select('user_id').eq('id', parseInt(_acceptModalData.studentId)).single()
+        .then(({ data: sp }) => {
+          if (sp?.user_id) createNotification(sp.user_id, 'status_changed',
+            { position_title: positionTitle, new_status: 'accepted' }, appId);
+        });
+    }
 
     if (dateValue) {
       showToast('Application accepted & interview scheduled!', 'success');
