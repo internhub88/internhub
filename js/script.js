@@ -1181,7 +1181,16 @@ document.addEventListener('DOMContentLoaded', function() {
   setActiveNavLink();
 
   if (isLoggedIn()) {
-    initUserMenu();
+    if (typeof buildNotifBell === 'function') {
+      initUserMenu();
+    } else {
+      const refScript = document.querySelector('script[src*="script.js"]');
+      const jsBase = refScript ? refScript.getAttribute('src').replace('script.js', '') : 'js/';
+      const s = document.createElement('script');
+      s.src = jsBase + 'notifications.js';
+      s.onload = () => initUserMenu();
+      document.head.appendChild(s);
+    }
     // Hide CTA for logged-in users
     const ctaSection = document.getElementById('cta-section');
     if (ctaSection) {

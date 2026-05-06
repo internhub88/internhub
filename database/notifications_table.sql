@@ -29,3 +29,6 @@ USING (
   )
 )
 WITH CHECK (true);
+
+-- Enable Realtime so the bell updates without page reload
+ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
