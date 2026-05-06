@@ -147,7 +147,7 @@ async function loadStudentProfile() {
     // Load applications with real student_id
     const { data: applications } = await supabaseClient
       .from('applications')
-      .select('*, positions(title)')
+      .select('*, positions(title), company_response')
       .eq('student_id', profile.id);
 
     // Load links
@@ -1280,7 +1280,7 @@ async function fetchPositionApplicants(positionId, container) {
     container.innerHTML = apps.map(app => {
       const status       = app.status || 'pending';
       const studentName  = app.student_profiles ? `${app.student_profiles.first_name || ''} ${app.student_profiles.last_name || ''}`.trim() || 'Applicant' : 'Applicant';
-      const studentEmail = app.student_profiles?.Users?.user_login || '';
+      const studentEmail = app.student_profiles?.email || app.student_profiles?.Users?.user_login || '';
       const appliedDate  = formatDateEuropean(app.applied_at);
       const existingDate = app.interview_date || '';
       const isCompanyMatch = app.initiated_by === 'company';
@@ -1533,11 +1533,11 @@ async function loadCompanyApplications() {
       return;
     }
 
-    const { data: apps, error: appErr } = await supabaseClient
-      .from('applications')     
-      .select('*, positions(title), student_profiles(*, Users(user_login))')     
-      .in('position_id', positionIds)
-      .order('applied_at', { ascending: false });
+const { data: apps, error: appErr } = await supabaseClient
+  .from('applications')
+  .select('*, positions(title), student_profiles(photo_url, first_name, last_name, phone, Users:user_id(user_login))')
+  .in('position_id', positionIds)
+  .order('applied_at', { ascending: false });
 
     if (appErr) throw appErr;
 
@@ -1573,39 +1573,89 @@ function fillCompanyApplications(applications) {
 
   container.innerHTML = applications.map(app => {
     const appData = JSON.stringify(app).replace(/"/g, '&quot;');
-    const status = app.status || 'pending';
-    const responseSnippet = app.company_response ? `<div style="margin-top:0.5rem; color:#555;"><strong>Response:</strong> ${app.company_response}</div>` : '';
+    const status  = app.status || 'pending';
 
-    const studentFullName = app.student_profiles ? `${app.student_profiles.first_name || ''} ${app.student_profiles.last_name || ''}`.trim() || 'Applicant' : 'Applicant';
-    const studentEmail = app.student_profiles?.contact_email || app.student_profiles?.Users?.user_login || '';
-    const positionTitle = app.positions?.title || 'Position';
-    const interviewDate = app.interview_date
-      ? `<p style="margin:0.4rem 0 0; font-size:0.85rem; color:#059669;">📅 Interview: ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</p>`
+    const responseSnippet = app.company_response
+      ? `<div style="margin-top:0.5rem; color:#555;"><strong>Response:</strong> ${app.company_response}</div>`
       : '';
-    const existingDate = app.interview_date ? app.interview_date : '';
+
+    // ── student / position data ──────────────────────────────────
+    const studentFullName = app.student_profiles
+      ? (`${app.student_profiles.first_name || ''} ${app.student_profiles.last_name || ''}`).trim() || 'Applicant'
+      : 'Applicant';
+const studentEmail = app.student_profiles?.Users?.user_login || '';
+    const positionTitle = app.positions?.title || 'Position';
+
+    // ── safe versions for data attributes (no quotes) ────────────
+    const safeName     = studentFullName.replace(/"/g, '').replace(/'/g, '');
+    const safeEmail    = studentEmail.replace(/"/g, '').replace(/'/g, '');
+    const safePosition = positionTitle.replace(/"/g, '').replace(/'/g, '');
+
+    // ── interview date display ───────────────────────────────────
+    const interviewDate = app.interview_date
+      ? `<p style="margin:0.4rem 0 0; font-size:0.85rem; color:#059669;">
+           📅 Interview: ${formatDateEuropean(app.interview_date)}
+           ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}
+         </p>`
+      : '';
+
+    // ── schedule/reschedule button ───────────────────────────────
+    const existingDate = app.interview_date || '';
     const interviewBtn = app.interview_date
-      ? `<button class="btn btn-small" style="font-size:0.78rem; background:#d1fae5; color:#065f46;" onclick="scheduleInterviewProfile('${studentFullName}', '${studentEmail}', '${positionTitle}', ${app.application_id}, '${existingDate}')">${t('pages.internshipDetail.scheduledBtn')}</button>`
-      : `<button class="btn btn-small btn-primary" style="font-size:0.78rem;" onclick="scheduleInterviewProfile('${studentFullName}', '${studentEmail}', '${positionTitle}', ${app.application_id}, '')">${t('pages.internshipDetail.scheduleInterviewBtn')}</button>`;
+      ? `<button class="btn btn-small" style="font-size:0.78rem; background:#d1fae5; color:#065f46;"
+               onclick="scheduleInterviewProfile(' ${app.application_id}, '${existingDate}')">
+           ${t('pages.internshipDetail.scheduledBtn')}
+         </button>`
+      : `<button class="btn btn-small btn-primary" style="font-size:0.78rem;"
+               onclick="scheduleInterviewProfile(' ${app.application_id}, '')">
+           ${t('pages.internshipDetail.scheduleInterviewBtn')}
+         </button>`;
+
+    
+
+    // ── accept button (only show if not yet accepted) ────────────
+    const acceptBtn = (status === 'pending' || status === 'reviewing')
+  ? `<button class="btn btn-small btn-primary"
+             style="font-size:0.78rem; background:#4f46e5;"
+             data-appid="${app.application_id}"
+             data-name="${safeName}"
+             data-email="${safeEmail}"
+             data-position="${safePosition}"
+             onclick="openAcceptModal(this)">
+       ✅ Accept
+     </button>`
+  : '';
+
     return `
-      <div class="application-card" id="company-app-${app.application_id}" style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+      <div class="application-card" id="company-app-${app.application_id}"
+           style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
         <div style="min-width:0; flex:1;">
           <h5 style="margin:0 0 0.5rem 0; font-size:1rem;">${positionTitle}</h5>
           <p style="margin:0; color:#374151; font-weight:600;">${studentFullName}</p>
-          <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${studentEmail}${app.student_profiles?.phone ? ' · ' + app.student_profiles.phone : ''}</p>
-          <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">${t('pages.internshipDetail.appliedLabel')} ${formatDateEuropean(app.applied_at)}</p>
-          <p style="margin:0.4rem 0 0; font-size:0.85rem;">${t('pages.internshipDetail.statusLabel')} <span class="status-badge status-${status}">${status}</span></p>
+          <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">
+            ${studentEmail}${app.student_profiles?.phone ? ' · ' + app.student_profiles.phone : ''}
+          </p>
+          <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">
+            ${t('pages.internshipDetail.appliedLabel')} ${formatDateEuropean(app.applied_at)}
+          </p>
+          <p style="margin:0.4rem 0 0; font-size:0.85rem;">
+            ${t('pages.internshipDetail.statusLabel')}
+            <span class="status-badge status-${status}">${status}</span>
+          </p>
           ${interviewDate}
           ${responseSnippet}
         </div>
-        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button class="btn btn-view" onclick="openCompanyAppModal(${appData})">${t('pages.internshipDetail.viewBtn')}</button>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:flex-start;">
+          <button class="btn btn-view" onclick="openCompanyAppModal(${appData})">
+            ${t('pages.internshipDetail.viewBtn')}
+          </button>
+          ${acceptBtn}
           ${interviewBtn}
         </div>
       </div>
     `;
   }).join('');
 }
-
 /**
  * EN: Converts a Date object to a string in the format required by
  *     <input type="datetime-local"> (YYYY-MM-DDTHH:mm). Uses local time
@@ -1779,6 +1829,9 @@ async function confirmInterviewSchedule() {
  * @param {Object} app - EN: application record with joined student/position data / FI: hakemustietue liitetyillä opiskelija-/positiotiedoilla
  */
 function openCompanyAppModal(app) {
+  console.log('openCompanyAppModal app:', app);
+  console.log('student_profiles:', app.student_profiles);
+  console.log('positions:', app.positions);
   const modal = document.getElementById('companyAppModal');
   if (!modal) return;
 
@@ -1791,16 +1844,19 @@ function openCompanyAppModal(app) {
   if (positionIdEl) positionIdEl.value = app.position_id || '';
 
   document.getElementById('companyAppPosition').textContent = app.positions?.title || 'Position';
-  document.getElementById('companyAppName').textContent = app.full_name || 'Applicant';
-  document.getElementById('companyAppEmail').textContent = app.email || 'No email provided';
-  document.getElementById('companyAppPhone').textContent = app.phone || 'No phone provided';
+  const sp = app.student_profiles || {};
+  const fullName = `${sp.first_name || ''} ${sp.last_name || ''}`.trim() || 'Applicant';
+  document.getElementById('companyAppName').textContent = fullName;
+document.getElementById('companyAppEmail').textContent = 
+  sp.contact_email || sp.email || sp.Users?.user_login || 'No email provided';
+  document.getElementById('companyAppPhone').textContent = sp.phone || 'No phone provided';
   document.getElementById('companyAppStatus').textContent = app.status || 'pending';
   document.getElementById('companyAppCoverLetter').textContent = app.cover_letter || 'No cover letter provided.';
 
   const cvLink = document.getElementById('companyAppCvLink');
   if (cvLink) {
     cvLink.innerHTML = app.cv_url
-      ? `<a href="${app.cv_url}" target="_blank" rel="noreferrer noopener">Download CV</a>`
+      ? `<a href="${app.cv_url}" target="_blank" rel="noreferrer noopener">Download CV (${app.cv_original_name || 'Resume.pdf'})</a>`
       : 'No CV uploaded.';
   }
 
@@ -2143,6 +2199,235 @@ async function saveCompanyApplicationStatus(newStatus) {
   }
 }
 
+// ── Accept modal state ──────────────────────────────────────────
+let _acceptModalData = {};   // { applicationId, studentName, studentEmail, positionTitle }
+
+/**
+ * Called when company clicks the Accept button on an application card.
+ * Opens the accept modal instead of accepting immediately.
+ */
+
+
+function openAcceptModalFromReview() {
+  // Read data from the currently open companyAppModal
+  const appId    = document.getElementById('companyAppId').value;
+  const name     = document.getElementById('companyAppName').textContent;
+  const email    = document.getElementById('companyAppEmail').textContent;
+  const position = document.getElementById('companyAppPosition').textContent;
+
+  console.log('openAcceptModalFromReview — appId:', appId, 'name:', name);
+
+  // Close the review modal
+  document.getElementById('companyAppModal').style.display = 'none';
+
+  // Set the accept modal data
+  _acceptModalData = {
+    applicationId: appId,
+    studentName:   name,
+    studentEmail:  email,
+    positionTitle: position,
+  };
+
+  document.getElementById('acceptModalDesc').textContent =
+    (name || '?') + ' — ' + (position || '?');
+
+  document.getElementById('acceptInterviewDateWrap').style.display = 'none';
+  document.getElementById('acceptWithInterviewBtn').textContent = '📅 Accept & Schedule Interview';
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(10, 0, 0, 0);
+  document.getElementById('acceptInterviewDateInput').value = toLocalInputValue(tomorrow);
+
+  // Show accept modal
+  document.getElementById('acceptModal').style.display = 'flex';
+}
+
+function closeAcceptModal() {
+  document.getElementById('acceptModal').style.display = 'none';
+}
+
+function openAcceptModal(btn) {
+  document.getElementById('companyAppModal').style.display = 'none';
+
+  const appId    = btn.getAttribute('data-appid');
+  const name     = btn.getAttribute('data-name');
+  const email    = btn.getAttribute('data-email');
+  const position = btn.getAttribute('data-position');
+
+  console.log('openAcceptModal — appId:', appId, 'name:', name);
+
+  _acceptModalData = {
+    applicationId: appId,
+    studentName:   name,
+    studentEmail:  email,
+    positionTitle: position,
+  };
+
+  document.getElementById('acceptModalDesc').textContent =
+    (name || '?') + ' — ' + (position || '?');
+
+  document.getElementById('acceptInterviewDateWrap').style.display = 'none';
+  document.getElementById('acceptWithInterviewBtn').textContent = '📅 Accept & Schedule Interview';
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(10, 0, 0, 0);
+  document.getElementById('acceptInterviewDateInput').value = toLocalInputValue(tomorrow);
+
+  document.getElementById('acceptModal').style.display = 'flex';
+}
+/**
+ * Toggles the date picker visible and changes the button to "Confirm".
+ * On second click (date picker already visible) → confirms and saves.
+ */
+function handleAcceptWithInterview() {
+  const wrap = document.getElementById('acceptInterviewDateWrap');
+  const btn  = document.getElementById('acceptWithInterviewBtn');
+
+  if (wrap.style.display === 'none') {
+    // First click → show the date picker
+    wrap.style.display = 'block';
+    btn.textContent = 'Confirm Interview Date';
+  } else {
+    // Second click → validate and save
+    const dateValue = document.getElementById('acceptInterviewDateInput').value;
+    if (!dateValue) {
+      showToast('Please select a date and time.', 'error');
+      return;
+    }
+    saveAcceptDecision(dateValue);
+  }
+}
+
+/**
+ * Accept without scheduling an interview — just sets status to 'accepted'.
+ */
+function handleAcceptOnly() {
+  saveAcceptDecision(null);
+}
+
+/**
+ * Saves the accept decision to Supabase.
+ * @param {string|null} dateValue - ISO datetime string, or null for no interview
+ */
+async function saveAcceptDecision(dateValue) {
+  closeAcceptModal();
+
+  const { applicationId, studentName, studentEmail, positionTitle } = _acceptModalData;
+
+  console.log('saveAcceptDecision — raw applicationId:', applicationId);
+
+  const appId = Number(applicationId);
+
+  if (!applicationId || isNaN(appId)) {
+    showToast('Error: invalid application ID — ' + applicationId, 'error');
+    return;
+  }
+
+  const updatePayload = {
+    status: 'accepted',
+    interview_date: dateValue ? new Date(dateValue).toISOString() : null,
+  };
+
+  try {
+    const { error } = await supabaseClient
+      .from('applications')
+      .update(updatePayload)
+      .eq('application_id', appId);
+
+    if (error) throw error;
+
+    if (dateValue) {
+      showToast('Application accepted & interview scheduled!', 'success');
+      const date    = new Date(dateValue);
+      const endDate = new Date(date.getTime() + 60 * 60 * 1000);
+      const fmt     = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const title   = encodeURIComponent(`Internship Interview - ${studentName}`);
+      const details = encodeURIComponent(`Interview with ${studentName} for ${positionTitle}`);
+      const guest   = encodeURIComponent(studentEmail);
+      const calUrl  = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${fmt(date)}/${fmt(endDate)}&add=${guest}`;
+      window.open(calUrl, '_blank');
+    } else {
+      showToast('Application accepted!', 'success');
+    }
+
+    await loadCompanyApplications();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+function updateDeclineCounter(textarea) {
+  const count = textarea.value.length;
+  const el = document.getElementById('declineCharCount');
+  el.textContent = count;
+  el.style.color = count >= 180 ? '#dc2626' : '#9ca3af';
+}
+
+function openDeclineModal() {
+  const name     = document.getElementById('companyAppName').textContent;
+  const position = document.getElementById('companyAppPosition').textContent;
+
+  document.getElementById('declineModalDesc').textContent =
+    (name || '?') + ' — ' + (position || '?');
+
+  // Clear previous response text
+  document.getElementById('declineResponseText').value = '';
+  document.getElementById('declineCharCount').textContent = '0';
+  
+
+  // Close the review modal, open the decline modal
+  document.getElementById('companyAppModal').style.display = 'none';
+  document.getElementById('declineModal').style.display = 'flex';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const textarea = document.getElementById('declineResponseText');
+  if (textarea) {
+    textarea.addEventListener('input', function () {
+      const count = this.value.length;
+      const el = document.getElementById('declineCharCount');
+      if (!el) return;
+      el.textContent = count;
+      el.style.color = count >= 180 ? '#dc2626' : '#9ca3af';
+    });
+  }
+});
+
+function closeDeclineModal() {
+  document.getElementById('declineModal').style.display = 'none';
+}
+
+async function confirmDecline() {
+  const appId    = document.getElementById('companyAppId').value;
+  const response = document.getElementById('declineResponseText').value.trim();
+
+  if (!appId) {
+    showToast('Error: no application selected.', 'error');
+    return;
+  }
+
+  closeDeclineModal();
+
+  try {
+    const { error } = await supabaseClient
+      .from('applications')
+      .update({
+        status:           'rejected',
+        company_response: response || null,
+        updated_at:       new Date().toISOString(),
+      })
+      .eq('application_id', parseInt(appId, 10));
+
+    if (error) throw error;
+
+    showToast('Application declined.', 'success');
+    await loadCompanyApplications();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
 /**
  * EN: Switches a specific position card between view mode and inline-edit mode
  *     using the position ID to find the corresponding view/edit DOM sections.
@@ -2327,14 +2612,34 @@ function fillApplications(applications) {
       return;
   }
 
-  const renderCard = (app) => {
+
+const renderCard = (app) => {
+  // store the response for this app
+  if (app.company_response) {
+    _appResponseMap[app.application_id] = app.company_response;
+  }
       const jobTitle = app.positions?.title || 'Unknown Position';
       const appData = JSON.stringify(app).replace(/"/g, '&quot;');
       return `
           <div class="application-card" id="app-${app.application_id}">
               <div class="app-info">
                   <h5>${jobTitle}</h5>
-                  <p>Status: <span class="status-badge status-${(app.status || 'pending').toLowerCase()}">${app.status || 'Pending'}</span></p>
+                  <p style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                    Status: <span class="status-badge status-${(app.status || 'pending').toLowerCase()}">${app.status || 'Pending'}</span>
+                    ${app.company_response
+                      ? `<button onclick="showCompanyResponse(${app.application_id})" 
+                                style="background:none; border:none; cursor:pointer; padding:0; 
+                                        line-height:1; color:#6b7280;" title="View company message">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" 
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+                                stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                          </svg>
+                        </button>`
+                      : ''}
+                  </p>
               </div>
               <div class="app-actions" style="display: flex; gap: 8px; margin-top: 10px;">
                   <button class="btn-view" onclick="viewApplication(${app.position_id})">View</button>
@@ -2358,7 +2663,45 @@ function fillApplications(applications) {
 
   container.innerHTML = html;
 }
+const _appResponseMap = {};
 
+function showCompanyResponse(applicationId) {
+  const message = _appResponseMap[applicationId];
+  if (!message) return;
+
+  let modal = document.getElementById('companyResponseModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'companyResponseModal';
+    modal.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:11000; align-items:center; justify-content:center;';
+    modal.innerHTML = `
+  <div style="background:#fff; padding:1.75rem; border-radius:12px; width:90%;
+              max-width:460px; box-shadow:0 10px 25px rgba(0,0,0,0.2); position:relative;">
+    <button onclick="document.getElementById('companyResponseModal').style.display='none'"
+            style="position:absolute; top:0.75rem; right:0.75rem; background:none;
+                   border:none; font-size:1.5rem; cursor:pointer; color:#9ca3af;">&times;</button>
+    <h4 style="margin:0 0 0.75rem 0; color:#374151;">📨 Company Response</h4>
+    <div id="declineCharDisplay"
+         style="font-size:0.78rem; color:#9ca3af; text-align:right; margin-bottom:0.4rem;"></div>
+    <p id="companyResponseText"
+       style="margin:0; color:#374151; white-space:pre-wrap; line-height:1.65;
+              background:#f8fafc; padding:1rem; border-radius:8px;
+              border:1px solid #e5e7eb; font-size:0.95rem; word-break:break-word;"></p>
+    <button onclick="document.getElementById('companyResponseModal').style.display='none'"
+            class="btn btn-secondary"
+            style="margin-top:1.25rem; width:100%;">Close</button>
+  </div>
+`;
+    document.body.appendChild(modal);
+  }
+
+  const textEl = document.getElementById('companyResponseText');
+  const countEl = document.getElementById('declineCharDisplay');
+
+  textEl.textContent = message;
+
+  modal.style.display = 'flex';
+}
 
 /**
  * EN: Opens the student application edit modal, pre-filling all fields with

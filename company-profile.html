@@ -846,12 +846,90 @@
       </div>
 
       <div style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-top:1.5rem; justify-content:flex-end;">
-        <button class="btn btn-primary" onclick="saveCompanyApplicationStatus('accepted')" data-i18n="companyProfile.btnAccept">Accept</button>
-        <button class="btn btn-danger" onclick="saveCompanyApplicationStatus('rejected')" data-i18n="companyProfile.btnDecline">Decline</button>
+        <button class="btn btn-primary"
+        id="companyAppAcceptBtn"
+        onclick="openAcceptModalFromReview()">
+  Accept
+</button>
+        <button class="btn btn-danger" onclick="openDeclineModal()">Decline</button>
         <button class="btn btn-outline" onclick="saveCompanyApplicationStatus('viewed')" data-i18n="companyProfile.btnViewed">Mark Viewed</button>
         <button class="btn btn-secondary" onclick="document.getElementById('companyAppModal').style.display='none'" data-i18n="companyProfile.btnClose">Close</button>
       </div>
     </div>
   </div>
+  <!-- ── Accept Application Modal ── -->
+<div id="acceptModal" style="display:none; position:fixed; z-index:10000; left:0; top:0;
+     width:100%; height:100%; background:rgba(0,0,0,0.5);
+     align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:2rem; border-radius:12px; width:90%;
+       max-width:420px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+
+    <h3 style="margin-top:0;">Accept Application</h3>
+    <p id="acceptModalDesc" style="color:#6b7280; margin-bottom:1.5rem;"></p>
+
+    <!-- Date/time picker (hidden until "with interview" is chosen) -->
+    <div id="acceptInterviewDateWrap" style="display:none; margin-bottom:1.25rem;">
+      <label style="font-size:0.9rem; font-weight:600; display:block; margin-bottom:0.4rem;">
+        Interview date &amp; time
+      </label>
+      <input type="datetime-local" id="acceptInterviewDateInput"
+             style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+      <!-- Option 1: accept + schedule interview -->
+      <button id="acceptWithInterviewBtn" class="btn btn-primary"
+              onclick="handleAcceptWithInterview()"
+              style="justify-content:center;">
+        Accept &amp; Schedule Interview
+      </button>
+
+      <!-- Option 2: accept without interview -->
+      <button class="btn" onclick="handleAcceptOnly()"
+              style="background:#d1fae5; color:#065f46; justify-content:center;">
+        Accept without Interview
+      </button>
+
+      <!-- Cancel -->
+      <button class="btn btn-outline" onclick="closeAcceptModal()"
+              style="justify-content:center;">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+<!-- ── Decline Application Modal ── -->
+<div id="declineModal" style="display:none; position:fixed; z-index:10001; left:0; top:0;
+     width:100%; height:100%; background:rgba(0,0,0,0.5);
+     align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:2rem; border-radius:12px; width:90%;
+       max-width:420px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+
+    <h3 style="margin-top:0; color:#dc2626;">Decline Application</h3>
+    <p id="declineModalDesc" style="color:#6b7280; margin-bottom:1rem;"></p>
+
+    <div style="margin-bottom:1.25rem;">
+      <label style="font-size:0.9rem; font-weight:600; display:block; margin-bottom:0.4rem;">
+        Response message <span style="color:#9ca3af; font-weight:400;">(optional)</span>
+      </label>
+     <textarea id="declineResponseText" rows="4" maxlength="500"
+          placeholder="e.g. Thank you for applying. Unfortunately we have chosen another candidate..."
+          style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;
+                 box-sizing:border-box; font-family:inherit; resize:vertical;"></textarea>
+                         <span id="declineCharCount">0</span> / 500
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+      <button class="btn btn-danger" onclick="confirmDecline()"
+              style="justify-content:center;">
+        Confirm Decline
+      </button>
+      <button class="btn btn-outline" onclick="closeDeclineModal()"
+              style="justify-content:center;">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
