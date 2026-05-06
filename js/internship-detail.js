@@ -666,6 +666,15 @@ document.getElementById('modalApplyForm').addEventListener('submit', async funct
 
         if (dbError) throw dbError;
 
+        // In-app notification for company
+        if (window.currentCompany?.user_id && typeof createNotification === 'function') {
+          createNotification(
+            window.currentCompany.user_id,
+            'application_submitted',
+            { position_title: window.currentPosition?.title || '' }
+          );
+        }
+
         // Notify employer by email
         const companyEmail = window.currentCompany?.contact_email;
         console.log('[Email] company contact_email:', companyEmail);

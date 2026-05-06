@@ -136,8 +136,7 @@ function initUserMenu() {
 
   const session = getCurrentSession();
   
-  const existingMenus = navMenu.querySelectorAll('.user-menu');
-  existingMenus.forEach(menu => menu.remove());
+  navMenu.querySelectorAll('.user-menu, .notif-bell-item').forEach(el => el.remove());
 
   const loginLi = Array.from(navMenu.children).find(li => 
     li.querySelector('a[href="auth.html"], .nav-link[href*="auth.html"]')
@@ -153,6 +152,12 @@ function initUserMenu() {
     //     Tämä estää tyhjän nimen välähdyksen, joka ilmenisi, jos elementti
     //     lisättäisiin ennen asynkronisen haun valmistumista.
     // Build nav item AFTER data loads, then append — prevents empty flash
+    // Bell icon — insert before avatar (non-admin only)
+    if (session.role !== 0 && typeof buildNotifBell === 'function') {
+      navMenu.querySelectorAll('.notif-bell-item').forEach(m => m.remove());
+      buildNotifBell(navMenu, session.userId);
+    }
+
     getUserData(session.userId).then(userData => {
       // Remove any stale menu that crept in during the async wait
       navMenu.querySelectorAll('.user-menu').forEach(m => m.remove());
@@ -208,9 +213,7 @@ function initUserMenu() {
     if (loginLi) loginLi.style.display = 'block';
 
     
-    // Remove user menu
-    const existingUserMenu = navMenu.querySelector('.user-menu');
-    if (existingUserMenu) existingUserMenu.remove();
+    navMenu.querySelectorAll('.user-menu, .notif-bell-item').forEach(el => el.remove());
   }
 }
 
