@@ -114,19 +114,13 @@ async function loadInternshipDetail(positionId) {
             const accepted = acceptedCount ?? 0;
             const spotsLeft = spotsTotal - accepted;
             const spotsBadge = document.getElementById('badgeSpots');
-            if (spotsBadge) {
-                if (spotsTotal === 1) {
-                    spotsBadge.textContent = accepted >= 1 ? '🪑 0 spots left' : '🪑 1 spot';
-                } else {
-                    spotsBadge.textContent = `🪑 ${spotsLeft > 0 ? spotsLeft : 0} of ${spotsTotal} spots`;
-                }
-            }
+            if (spotsBadge) spotsBadge.textContent = `🪑 ${tSpots(spotsLeft, spotsTotal)}`;
         } catch (appCountErr) {
             console.warn('Unable to load application count:', appCountErr);
             const countBadge = document.getElementById('applicationCountBadge');
             if (countBadge) countBadge.textContent = '👥 N/A';
             const spotsBadge = document.getElementById('badgeSpots');
-            if (spotsBadge) spotsBadge.textContent = `🪑 ${position.spots_total || 1} spot${(position.spots_total || 1) !== 1 ? 's' : ''}`;
+            if (spotsBadge) spotsBadge.textContent = `🪑 ${t('companyProfile.spotsOne').replace('1', String(position.spots_total || 1))}`;
         }
 
         const bPublished = document.getElementById('badgePublished');

@@ -881,7 +881,19 @@ async function openEditModal(id) {
       document.getElementById('pSalary').value = data.salary || "";
       document.getElementById('pRespon').value = data.responsibilities || "";
       document.getElementById('pReqs').value = data.requirements || "";
-      document.getElementById('pStatus').value = data.status || "active";
+      const pStatus = document.getElementById('pStatus');
+      // 'closed' is not a selectable option in the form, but we need to show it
+      // when editing an already-closed position so the company knows the current state.
+      let closedOpt = pStatus.querySelector('option[value="closed"]');
+      if (data.status === 'closed') {
+          if (!closedOpt) {
+              closedOpt = new Option('Closed (reopen by setting Active)', 'closed');
+              pStatus.appendChild(closedOpt);
+          }
+      } else if (closedOpt) {
+          closedOpt.remove();
+      }
+      pStatus.value = data.status || "active";
       document.getElementById('pSpots').value = data.spots_total ?? 1;
       document.getElementById('pStart').value = data.period_start || "";
       document.getElementById('pEnd').value = data.period_end || "";
@@ -916,6 +928,10 @@ async function submitPosition() {
   
   if (!currentProfile) { showToast("Profile not loaded.", 'warning'); return; }
 
+  const spotsTotal = parseInt(document.getElementById('pSpots').value) || 1;
+  let statusVal = document.getElementById('pStatus').value;
+  if (!['active', 'draft', 'closed'].includes(statusVal)) statusVal = 'active';
+
   const postData = {
       company_id: currentProfile.company_id,
       title: document.getElementById('pTitle').value.trim(),
@@ -923,8 +939,8 @@ async function submitPosition() {
       responsibilities: document.getElementById('pRespon').value,
       requirements: document.getElementById('pReqs').value,
       salary: document.getElementById('pSalary').value.trim() || null,
-      spots_total: parseInt(document.getElementById('pSpots').value) || 1,
-      status: document.getElementById('pStatus').value,
+      spots_total: spotsTotal,
+      status: statusVal,
       period_start: document.getElementById('pStart').value || null,
       period_end: document.getElementById('pEnd').value || null,
       is_open_ended: document.getElementById('pOpenEnded').checked
@@ -937,6 +953,13 @@ async function submitPosition() {
       let positionId = editId ? parseInt(editId) : null;
 
       if (editId) {
+          // Auto-reopen: if position was closed but new spots_total > accepted count → set active
+          if (postData.status === 'closed') {
+              const { count: acceptedCnt } = await supabaseClient
+                  .from('applications').select('*', { count: 'exact', head: true })
+                  .eq('position_id', editId).eq('status', 'accepted');
+              if ((acceptedCnt || 0) < postData.spots_total) postData.status = 'active';
+          }
           const { error } = await supabaseClient.from('positions').update(postData).eq('position_id', editId);
           if (error) throw error;
       } else {
@@ -969,6 +992,9 @@ function closePostModal() {
   modal.style.display = 'none';
   document.body.style.overflow = '';
   positionSelectedCategoryIds = [];
+  const pStatus = document.getElementById('pStatus');
+  const closedOpt = pStatus?.querySelector('option[value="closed"]');
+  if (closedOpt) closedOpt.remove();
   const err = document.getElementById('postError');
   if (err) err.style.display = 'none';
 }
@@ -1220,9 +1246,7 @@ function fillCompanyPostings(positions) {
           const spotsTotal = pos.spots_total || 1;
           const acceptedCount = pos._acceptedCount || 0;
           const spotsLeft = spotsTotal - acceptedCount;
-          const spotsLabel = spotsTotal === 1
-              ? (spotsLeft <= 0 ? '0 spots left' : '1 spot')
-              : `${spotsLeft > 0 ? spotsLeft : 0} of ${spotsTotal} spots left`;
+          const spotsLabel = tSpots(spotsLeft, spotsTotal);
           const sc = statusColors[pos.status] || '';
           const cats = (pos.position_categories || [])
               .map(pc => `<span class="category-tag" style="font-size:0.75rem; padding:0.2rem 0.5rem;">${pc.job_categories?.title || ''}</span>`)
@@ -1903,6 +1927,25 @@ document.getElementById('companyAppEmail').textContent =
   }
 
   document.getElementById('companyAppResponse').value = app.company_response || '';
+
+  const isAccepted = app.status === 'accepted';
+  const acceptBtn  = document.getElementById('companyAppAcceptBtn');
+  const declineBtn = document.getElementById('companyAppDeclineBtn');
+  if (acceptBtn) {
+    if (isAccepted) {
+      acceptBtn.textContent = t('companyProfile.btnRevoke');
+      acceptBtn.onclick = () => saveCompanyApplicationStatus('pending');
+      acceptBtn.classList.replace('btn-primary', 'btn-secondary');
+    } else {
+      acceptBtn.textContent = t('companyProfile.btnAccept');
+      acceptBtn.onclick = openAcceptModalFromReview;
+      acceptBtn.classList.replace('btn-secondary', 'btn-primary');
+    }
+  }
+  if (declineBtn) {
+    declineBtn.style.display = isAccepted ? 'none' : '';
+  }
+
   modal.style.display = 'block';
 }
 
@@ -2212,6 +2255,13 @@ async function saveCompanyApplicationStatus(newStatus) {
       const positionId = document.getElementById('companyAppPositionId')?.value;
       if (positionId) {
         await supabaseClient.from('positions').update({ status: 'closed' }).eq('position_id', parseInt(positionId, 10));
+      }
+    }
+
+    if (newStatus === 'pending') {
+      const positionId = document.getElementById('companyAppPositionId')?.value;
+      if (positionId) {
+        await supabaseClient.from('positions').update({ status: 'open' }).eq('position_id', parseInt(positionId, 10));
       }
     }
 
