@@ -120,7 +120,7 @@ const TRANSLATIONS = {
       noResultsTitle: 'No internships found', noResultsDesc: 'Try adjusting your search filters'
     },
     detail: {
-      backLink: '← Back to Internships',
+      backLink: '← Back',
       overviewTitle: 'Job Overview',
       salaryLabel: 'SALARY', durationLabel: 'DURATION', locationLabel: 'LOCATION',
       aboutTitle: 'About Us', descTitle: 'Description',
@@ -627,7 +627,7 @@ const TRANSLATIONS = {
       noResultsTitle: 'Harjoittelupaikkoja ei löydy', noResultsDesc: 'Kokeile muuttaa hakusuodattimia'
     },
     detail: {
-      backLink: '← Takaisin harjoittelupaikkoihin',
+      backLink: '← Takaisin',
       overviewTitle: 'Työn yleiskatsaus',
       salaryLabel: 'PALKKA', durationLabel: 'KESTO', locationLabel: 'SIJAINTI',
       aboutTitle: 'Meistä', descTitle: 'Kuvaus',
@@ -1129,7 +1129,7 @@ const TRANSLATIONS = {
       noResultsTitle: 'Inga praktikplatser hittades', noResultsDesc: 'Försök justera dina sökfilter'
     },
     detail: {
-      backLink: '← Tillbaka till praktikplatser',
+      backLink: '← Tillbaka',
       overviewTitle: 'Jobböversikt',
       salaryLabel: 'LÖN', durationLabel: 'VARAKTIGHET', locationLabel: 'PLATS',
       aboutTitle: 'Om oss', descTitle: 'Beskrivning',
