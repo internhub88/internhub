@@ -454,7 +454,12 @@ const TRANSLATIONS = {
         confirmCalendarBtn: 'Confirm & Open Calendar',
         cancelInterviewBtn: 'Cancel Interview',
         closeBtn: 'Close',
-        viewDetailsBtn: 'View Details'
+        viewDetailsBtn: 'View Details',
+        viewCompanyProfileBtn: '🏢 View Full Profile',
+        companyAboutLabel: 'About',
+        companyTeamLabel: 'Our Team',
+        companyProfileLoading: 'Loading company profile...',
+        companyProfileError: 'Could not load company profile.'
       },
       termsOfService: {
         title: 'Terms of Service', subtitle: 'Last Updated: April 2026',
