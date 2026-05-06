@@ -849,9 +849,7 @@ async function loadInternships() {
       const spotsTotal = pos.spots_total || 1;
       const acceptedCount = acceptedCountMap[pos.position_id] || 0;
       const spotsLeft = spotsTotal - acceptedCount;
-      const spotsText = spotsTotal === 1
-        ? '1 spot'
-        : `${spotsLeft} of ${spotsTotal} spots`;
+      const spotsText = tSpots(spotsLeft, spotsTotal);
 
       return `
         <div class="job-card"

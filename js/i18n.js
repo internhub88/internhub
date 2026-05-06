@@ -186,6 +186,7 @@ const TRANSLATIONS = {
       postResponLabel: 'Responsibilities', postReqsLabel: 'Requirements',
       postSalaryLabel: 'Salary / Compensation',
       postSpotsLabel: 'Number of Spots', postSpotsHint: 'How many interns can be accepted for this position',
+      spotsOne: '1 spot', spotsNone: '0 spots left', spotsOf: '{left} of {total} spots',
       postStartLabel: 'Start Date', postEndLabel: 'End Date',
       postOpenEnded: 'This position is open-ended (no fixed end date)',
       postCategoryLabel: 'Category *', postCategoryDefault: 'Select a category...',
@@ -196,7 +197,7 @@ const TRANSLATIONS = {
       appEmailLabel: 'Email:', appPhoneLabel: 'Phone:', appStatusLabel: 'Status:',
       appLetterLabel: 'Cover Letter', appLetterEmpty: 'No cover letter provided.',
       appCvLabel: 'CV / Resume',
-      btnAccept: 'Accept', btnDecline: 'Decline', btnViewed: 'Mark Viewed', btnClose: 'Close',
+      btnAccept: 'Accept', btnRevoke: 'Revoke', btnDecline: 'Decline', btnViewed: 'Mark Viewed', btnClose: 'Close',
       posView: 'View', posEdit: 'Edit', posDelete: 'Delete',
       posApplications: 'Applications', posShowMore: 'Show more', posShowLess: 'Show less',
       matchFindBtn: '🔍 Find matching students',
@@ -692,6 +693,7 @@ const TRANSLATIONS = {
       postResponLabel: 'Vastuualueet', postReqsLabel: 'Vaatimukset',
       postSalaryLabel: 'Palkka / Korvaus',
       postSpotsLabel: 'Paikkojen määrä', postSpotsHint: 'Kuinka monta harjoittelijaa voidaan hyväksyä tälle paikalle',
+      spotsOne: '1 paikka', spotsNone: '0 paikkaa jäljellä', spotsOf: '{left} / {total} paikkaa',
       postStartLabel: 'Aloituspäivä', postEndLabel: 'Lopetuspäivä',
       postOpenEnded: 'Tämä paikka on avoinna toistaiseksi (ei kiinteää päättymispäivää)',
       postCategoryLabel: 'Kategoria *', postCategoryDefault: 'Valitse kategoria...',
@@ -702,7 +704,7 @@ const TRANSLATIONS = {
       appEmailLabel: 'Sähköposti:', appPhoneLabel: 'Puhelin:', appStatusLabel: 'Tila:',
       appLetterLabel: 'Saatekirje', appLetterEmpty: 'Saatekirjettä ei ole toimitettu.',
       appCvLabel: 'CV / Ansioluettelo',
-      btnAccept: 'Hyväksy', btnDecline: 'Hylkää', btnViewed: 'Merkitse nähdyksi', btnClose: 'Sulje',
+      btnAccept: 'Hyväksy', btnRevoke: 'Peruuta', btnDecline: 'Hylkää', btnViewed: 'Merkitse nähdyksi', btnClose: 'Sulje',
       posView: 'Näytä', posEdit: 'Muokkaa', posDelete: 'Poista',
       posApplications: 'Hakemukset', posShowMore: 'Näytä lisää', posShowLess: 'Näytä vähemmän',
       matchFindBtn: '🔍 Etsi sopivia opiskelijoita',
@@ -1193,6 +1195,7 @@ const TRANSLATIONS = {
       postResponLabel: 'Ansvarsområden', postReqsLabel: 'Krav',
       postSalaryLabel: 'Lön / Ersättning',
       postSpotsLabel: 'Antal platser', postSpotsHint: 'Hur många praktikanter kan accepteras för denna tjänst',
+      spotsOne: '1 plats', spotsNone: '0 platser kvar', spotsOf: '{left} av {total} platser',
       postStartLabel: 'Startdatum', postEndLabel: 'Slutdatum',
       postOpenEnded: 'Denna tjänst är tillsvidare (inget fast slutdatum)',
       postCategoryLabel: 'Kategori *', postCategoryDefault: 'Välj en kategori...',
@@ -1203,7 +1206,7 @@ const TRANSLATIONS = {
       appEmailLabel: 'E-post:', appPhoneLabel: 'Telefon:', appStatusLabel: 'Status:',
       appLetterLabel: 'Personligt brev', appLetterEmpty: 'Inget personligt brev bifogat.',
       appCvLabel: 'CV / Meritförteckning',
-      btnAccept: 'Acceptera', btnDecline: 'Avböj', btnViewed: 'Markera som sedd', btnClose: 'Stäng',
+      btnAccept: 'Acceptera', btnRevoke: 'Återkalla', btnDecline: 'Avböj', btnViewed: 'Markera som sedd', btnClose: 'Stäng',
       posView: 'Visa', posEdit: 'Redigera', posDelete: 'Ta bort',
       posApplications: 'Ansökningar', posShowMore: 'Visa mer', posShowLess: 'Visa mindre',
       matchFindBtn: '🔍 Hitta matchande studenter',
@@ -1525,6 +1528,16 @@ function t(key) {
   let fallback = TRANSLATIONS.en;
   for (const k of keys) fallback = fallback?.[k];
   return fallback ?? key;
+}
+
+function tSpots(spotsLeft, spotsTotal) {
+  const accepted = spotsTotal - spotsLeft;
+  if (spotsTotal === 1) {
+    return accepted >= 1 ? t('companyProfile.spotsNone') : t('companyProfile.spotsOne');
+  }
+  return t('companyProfile.spotsOf')
+    .replace('{left}', spotsLeft > 0 ? spotsLeft : 0)
+    .replace('{total}', spotsTotal);
 }
 
 function setLanguage(lang) {
