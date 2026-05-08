@@ -115,8 +115,8 @@ All tables are protected by Row Level Security (RLS) policies.
 
 ```bash
 # Clone the repository
-git clone https://github.com/marina-390/Internship-Search-App-Project.git
-cd Internship-Search-App-Project
+git clone https://github.com/internhub88/internhub.git
+cd internhub
 
 # Create your Supabase config file
 cp js/supabase.example.js js/supabase.js
