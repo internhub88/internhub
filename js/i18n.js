@@ -41,13 +41,12 @@ const TRANSLATIONS = {
       step3: 'Step 03', step3Title: 'Get Hired', step3Desc: 'Land your dream internship and launch your career'
     },
     cta: {
-      label: 'Get started today',
-      headline: 'Ready to launch your career?',
-      description: 'Join thousands of students already finding great internships through InternHub. It only takes two minutes to create your profile.',
-      studentTitle: "I'm a Student", studentDesc: 'Find internships that match your skills',
-      employerTitle: "I'm an Employer", employerDesc: 'Post positions and find great interns',
-      signinTitle: 'Sign In', signinDesc: 'Continue where you left off'
-    },
+  label: 'Your future starts here',
+  headline: { part1: 'Ready to', part2: 'launch your career?' },
+  description: "Conventional job searches don't work. Discover the InternHub way to land your internship.",
+  btnLogin: 'Login',
+  btnRegister: 'Register'
+},
     shareExperience: {
       sectionSubtitle: 'Pay It Forward',
       sectionTitle: 'Share Your Experience',
@@ -548,13 +547,12 @@ const TRANSLATIONS = {
       step3: 'Vaihe 03', step3Title: 'Tule palkatuksi', step3Desc: 'Hanki unelmaharjoittelupaikkasi ja käynnistä urasi'
     },
     cta: {
-      label: 'Aloita tänään',
-      headline: 'Valmis käynnistämään urasi?',
-      description: 'Liity tuhansien opiskelijoiden joukkoon, jotka löytävät hyviä harjoittelupaikkoja InternHubin kautta. Profiilin luominen kestää vain kaksi minuuttia.',
-      studentTitle: 'Olen opiskelija', studentDesc: 'Löydä harjoittelupaikka, joka vastaa taitojasi',
-      employerTitle: 'Olen työnantaja', employerDesc: 'Ilmoita paikkoja ja löydä hyviä harjoittelijoita',
-      signinTitle: 'Kirjaudu sisään', signinDesc: 'Jatka siitä mihin jäit'
-    },
+  label: 'Tulevaisuutesi alkaa tästä',
+  headline: { part1: 'Valmis', part2: 'käynnistämään urasi?' },
+  description: 'Tavalliset työnhaut eivät toimi. Löydä harjoittelupaikkasi InternHubin avulla.',
+  btnLogin: 'Kirjaudu',
+  btnRegister: 'Rekisteröidy'
+},
     shareExperience: {
       sectionSubtitle: 'Auta seuraavia',
       sectionTitle: 'Jaa kokemuksesi',
@@ -1050,13 +1048,12 @@ const TRANSLATIONS = {
       step3: 'Steg 03', step3Title: 'Bli anställd', step3Desc: 'Få din drömprakt och starta din karriär'
     },
     cta: {
-      label: 'Kom igång idag',
-      headline: 'Redo att starta din karriär?',
-      description: 'Gå med tusentals studenter som redan hittar bra praktikplatser via InternHub. Det tar bara två minuter att skapa din profil.',
-      studentTitle: 'Jag är student', studentDesc: 'Hitta praktikplatser som matchar dina färdigheter',
-      employerTitle: 'Jag är arbetsgivare', employerDesc: 'Publicera tjänster och hitta bra praktikanter',
-      signinTitle: 'Logga in', signinDesc: 'Fortsätt där du slutade'
-    },
+  label: 'Din framtid börjar här',
+  headline: { part1: 'Redo att', part2: 'starta din karriär?' },
+  description: 'Vanliga jobbsökningar fungerar inte. Hitta din praktikplats med InternHub.',
+  btnLogin: 'Logga in',
+  btnRegister: 'Registrera'
+},
     shareExperience: {
       sectionSubtitle: 'Ge tillbaka',
       sectionTitle: 'Dela din erfarenhet',
