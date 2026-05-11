@@ -548,13 +548,26 @@ function sortJobs() {
   cards.forEach(card => jobsList.appendChild(card));
 }
 
-function toggleGroupExpand(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const isOpen = el.style.display === 'block';
-  el.style.display = isOpen ? 'none' : 'block';
-  const btn = el.previousElementSibling?.querySelector('button');
-  if (btn) btn.textContent = isOpen ? '▶' : '▼';
+function toggleCategoryPanel() {
+  const panel = document.getElementById('categoryPanel');
+  if (!panel) return;
+  const isOpen = panel.style.display === 'block';
+  closeAllCategoryPanels();
+  if (!isOpen) {
+    panel.style.display = 'block';
+    document.querySelector('#categoryFilterBtn span:last-child').textContent = '▴';
+  } else {
+    document.querySelector('#categoryFilterBtn span:last-child').textContent = '▾';
+  }
+}
+
+
+function selectCategory(value, label) {
+  window._selectedCategoryValue = value;
+  const labelEl = document.getElementById('categoryFilterLabel');
+  if (labelEl) labelEl.textContent = label || 'All Categories';
+  document.getElementById('categoryPanel').style.display = 'none';
+  filterJobs();
 }
 /**
  * EN: Fetches all job categories (joined with their parent group title) from
@@ -599,7 +612,7 @@ async function loadCategoriesForFilter() {
               (${group.job_categories?.length || 0})
             </span>
           </div>
-          <button onclick="toggleGroupExpand(${group.group_id})" id="group-arrow-${group.group_id}"
+<button onclick="toggleGroupExpand('group-cats-${group.group_id}')" id="group-arrow-${group.group_id}"
                   style="background:none; border:none; cursor:pointer; padding:0.55rem 0.75rem;
                          color:#9ca3af; font-size:0.8rem;">▶</button>
         </div>
@@ -629,6 +642,25 @@ function toggleEditCategoryPanel() {
   if (!isOpen) {
     panel.style.display = 'block';
     populateCategoryGroupList('editCategoryGroupList', selectEditCategory);
+  }
+}
+
+
+function toggleGroupExpand(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isOpen = el.style.display === 'block';
+  el.style.display = isOpen ? 'none' : 'block';
+
+  // Try arrow by matching ID convention: group-cats-X → group-arrow-X
+  const arrowId = id.replace('group-cats-', 'group-arrow-');
+  const arrowBtn = document.getElementById(arrowId);
+  if (arrowBtn) {
+    arrowBtn.textContent = isOpen ? '▶' : '▼';
+  } else {
+    // Fallback for populateCategoryGroupList panels (editCategoryGroupList_X etc.)
+    const btn = el.previousElementSibling?.querySelector('button');
+    if (btn) btn.textContent = isOpen ? '▶' : '▼';
   }
 }
 
@@ -684,14 +716,10 @@ function closeAllCategoryPanels() {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
+  // Reset the main category button arrow
+  const arrow = document.querySelector('#categoryFilterBtn span:last-child');
+  if (arrow) arrow.textContent = '▾';
 }
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('#editCategoryWrap') &&
-      !e.target.closest('#reqCategoryWrap') &&
-      !e.target.closest('#filterCategoryWrap')) {
-    closeAllCategoryPanels();
-  }
-});
 
 // ── Shared: populate the group list (reuse your existing groups/categories data) ──
 async function populateCategoryGroupList(listId, onSelect) {
