@@ -196,9 +196,11 @@
                  "Cancel" (toggleCompanyEdit(false) → palaa näyttötilaan tallentamatta). -->
     </div>
     <div style="text-align: right; margin-bottom: 2rem;">
-              <button class="btn btn-small btn-primary" id="editProfileBtn" onclick="enterEditMode()" data-i18n="studentProfile.btnEdit">Edit Profile</button>
-              <button class="btn btn-small btn-primary" id="saveProfileBtn" onclick="saveProfile()" style="display:none;" data-i18n="studentProfile.btnSave">Save</button>
-              <button class="btn btn-small btn-secondary" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;" data-i18n="studentProfile.btnCancel">Cancel</button>
+              <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)" data-i18n="studentProfile.btnEdit">Edit Profile</button>
+              <div id="editActionButtons" style="display:none;">
+                <button class="btn btn-small btn-primary" onclick="saveCompanyProfile()" data-i18n="studentProfile.btnSave">Save</button>
+                <button class="btn btn-small btn-secondary" onclick="toggleCompanyEdit(false)" data-i18n="studentProfile.btnCancel">Cancel</button>
+              </div>
             </div>
 
     <!-- EN: #companyDisplayAbout — read-only "About Company" block.
