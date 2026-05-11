@@ -652,16 +652,28 @@ function toggleGroupExpand(id) {
   const isOpen = el.style.display === 'block';
   el.style.display = isOpen ? 'none' : 'block';
 
-  // Try arrow by matching ID convention: group-cats-X → group-arrow-X
-  const arrowId = id.replace('group-cats-', 'group-arrow-');
-  const arrowBtn = document.getElementById(arrowId);
+  // Try arrow by matching ID convention used by loadCategoriesForFilter() on internships page:
+  //   button id="group-arrow-${group.group_id}"
+  //   div    id="group-cats-${group.group_id}"
+  // For other panels, populateCategoryGroupList() uses ids like:
+  //   button onclick="toggleGroupExpand('${listId}_${group.group_id}')"
+  //   div id="${listId}_${group.group_id}"
+  const catsIdPrefix = 'group-cats-';
+  const arrowBtn = id.startsWith(catsIdPrefix)
+    ? document.getElementById(id.replace(catsIdPrefix, 'group-arrow-'))
+    : null;
+
   if (arrowBtn) {
     arrowBtn.textContent = isOpen ? '▶' : '▼';
-  } else {
-    // Fallback for populateCategoryGroupList panels (editCategoryGroupList_X etc.)
-    const btn = el.previousElementSibling?.querySelector('button');
-    if (btn) btn.textContent = isOpen ? '▶' : '▼';
+    return;
   }
+
+  // Fallback: locate the nearest header button preceding the expanded div
+  // (covers edit/profile request category panels).
+  const header = el.closest('[style*="overflow:hidden"], div');
+  const btn = el.previousElementSibling?.querySelector('button') ||
+              header?.querySelector(':scope > div > button');
+  if (btn) btn.textContent = isOpen ? '▶' : '▼';
 }
 
 function selectEditCategory(value, label) {
