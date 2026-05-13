@@ -657,7 +657,19 @@ function toggleGroupExpand(id, arrowButton = null) {
     return;
   }
 
-  const btn = el.previousElementSibling?.querySelector('button');
+  const catsIdPrefix = 'group-cats-';
+  const arrowBtn = id.startsWith(catsIdPrefix)
+    ? document.getElementById(id.replace(catsIdPrefix, 'group-arrow-'))
+    : null;
+
+  if (arrowBtn) {
+    arrowBtn.textContent = isOpen ? '▶' : '▼';
+    return;
+  }
+
+  const header = el.closest('[style*="overflow:hidden"], div');
+  const btn = el.previousElementSibling?.querySelector('button') ||
+              header?.querySelector(':scope > div > button');
   if (btn) btn.textContent = isOpen ? '▶' : '▼';
 }
 

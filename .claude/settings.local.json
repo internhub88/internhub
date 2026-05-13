@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:internship-search-app-project.vercel.app)",
+      "Bash(python *)",
+      "Bash(Get-ChildItem -Path \"D:\\\\KPEDU\\\\Search_project\" -Recurse -Directory)",
+      "Bash(Select-Object -First 30)",
+      "PowerShell(head *)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)"
+    ]
+  }
+}

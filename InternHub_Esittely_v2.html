@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InternHub — Esittely</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f3f4f6;
+    color: #111827;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto 20px;
+    background: #fff;
+    padding: 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+
+  /* ─── Header ─────────────────────────────────────── */
+  .header {
+    background: linear-gradient(135deg, #5a669d 0%, #667eea 100%);
+    color: white;
+    padding: 36px 40px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .header-logo {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .header-sub {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-top: 6px;
+    font-weight: 400;
+  }
+  .header-tagline {
+    font-size: 13px;
+    opacity: 0.75;
+    margin-top: 3px;
+  }
+  .badges {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1.5px solid rgba(255,255,255,0.5);
+    color: white;
+  }
+  .badge-blue { background: rgba(102,126,234,0.4); }
+  .badge-orange { background: rgba(249,115,22,0.5); }
+  .badge-gray { background: rgba(255,255,255,0.15); }
+  .authors {
+    position: absolute;
+    right: 40px; bottom: 18px;
+    font-size: 11px;
+    opacity: 0.65;
+  }
+
+  /* ─── Body content ───────────────────────────────── */
+  .content {
+    padding: 32px 40px;
+  }
+
+  .section {
+    margin-bottom: 32px;
+  }
+
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #5a669d;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #d0d3ec;
+  }
+
+  /* ─── Problem/Solution table ─────────────────────── */
+  .ps-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .ps-table th {
+    background: #f8fafc;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+  }
+  .ps-table td {
+    padding: 9px 14px;
+    border: 1px solid #e5e7eb;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .ps-table tr:nth-child(even) td { background: #fafafa; }
+  .ps-table tr:hover td { background: #f0f1f9; }
+
+  /* ─── Feature cards ──────────────────────────────── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .feature-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .feature-card-title {
+    font-weight: 700;
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+  .feature-card-body {
+    font-size: 11.5px;
+    color: #4b5563;
+    line-height: 1.55;
+  }
+  .fc-student .feature-card-title { color: #5a669d; }   /* primary */
+  .fc-company .feature-card-title { color: #059669; }   /* secondary */
+  .fc-listing .feature-card-title { color: #667eea; }   /* gradient end */
+  .fc-interview .feature-card-title { color: #b45309; } /* warm amber */
+  .fc-admin .feature-card-title { color: #dc2626; }     /* red */
+  .fc-gdpr .feature-card-title { color: #5a669d; }      /* primary */
+
+  /* ─── Tech table ─────────────────────────────────── */
+  .tech-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .tech-table th {
+    background: #5a669d;
+    color: white;
+    padding: 9px 14px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .tech-table td {
+    padding: 8px 14px;
+    border: 1px solid #e5e7eb;
+    vertical-align: top;
+  }
+  .tech-table tr:nth-child(even) td { background: #f9fafb; }
+  .tech-badge {
+    display: inline-block;
+    background: #eeeef7;
+    color: #5a669d;
+    border: 1px solid #c4c8e8;
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .fix-badge {
+    display: inline-block;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+  .new-badge {
+    display: inline-block;
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+
+  /* ─── Role cards ─────────────────────────────────── */
+  .roles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .role-card {
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 11.5px;
+  }
+  .role-card ul { padding-left: 14px; }
+  .role-card li { margin-bottom: 3px; }
+  .role-card-title {
+    font-weight: 700;
+    font-size: 12.5px;
+    margin-bottom: 8px;
+  }
+  .rc-student { background: #eeeef7; border: 1px solid #c4c8e8; }
+  .rc-student .role-card-title { color: #5a669d; }
+  .rc-company { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .rc-company .role-card-title { color: #15803d; }
+  .rc-admin { background: #fef2f2; border: 1px solid #fecaca; }
+  .rc-admin .role-card-title { color: #dc2626; }
+
+  /* ─── Interesting solutions table ────────────────── */
+  .solutions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .solutions-table th {
+    background: #f8fafc;
+    padding: 9px 14px;
+    text-align: left;
+    font-weight: 700;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    width: 30%;
+  }
+  .solutions-table td {
+    padding: 9px 14px;
+    border: 1px solid #e5e7eb;
+    vertical-align: top;
+    line-height: 1.55;
+  }
+  .solutions-table tr:nth-child(even) td,
+  .solutions-table tr:nth-child(even) th { background: #fafafa; }
+
+  /* ─── Footer ─────────────────────────────────────── */
+  .footer {
+    text-align: center;
+    padding: 12px 40px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    background: #1f2937;
+    margin-top: 4px;
+  }
+
+  /* ─── Print ──────────────────────────────────────── */
+  @media print {
+    body { background: white; }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: avoid; }
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 1
+═══════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="header">
+    <div class="header-logo">InternHub</div>
+    <div class="header-sub">Suomalainen harjoittelualusta</div>
+    <div class="header-tagline">Yhdistaa opiskelijat ja tyonantajat tehokkaasti</div>
+    <div class="badges">
+      <span class="badge badge-blue">Suomi / EN / SV</span>
+      <span class="badge badge-orange">GDPR Art.17</span>
+      <span class="badge badge-gray">Apache 2.0</span>
+    </div>
+    <div class="authors">Yehereva · Likhacheva · Petruk · 2026</div>
+  </div>
+
+  <div class="content">
+
+    <!-- Problem / Solution -->
+    <div class="section">
+      <div class="section-title">Minkä ongelman InternHub ratkaisee?</div>
+      <table class="ps-table">
+        <thead>
+          <tr>
+            <th style="width:40%">Ongelma</th>
+            <th>Ratkaisu InternHubissa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Opiskelijoilla ei ole yhta paikkaa harjoittelupaikkojen selaamiseen</td>
+            <td>Hakemisto kaikista aktiivisista ilmoituksista — suodattimet sijainnin, kategorian ja paivamaaran mukaan</td>
+          </tr>
+          <tr>
+            <td>Hakemusten seuranta tapahtuu sahkopostilla tai muistiinpanoilla</td>
+            <td>Opiskelija nakee tilat profiilissaan: <em>pending, viewed, accepted</em> tai <em>rejected</em></td>
+          </tr>
+          <tr>
+            <td>Tyonantajilla ei ole tapaa aikatauluttaa haastatteluja alustalla</td>
+            <td>Haastattelu aikataulutetaan suoraan hakemuksesta: paivan valinta avaa esitaytettyn Google Calendar -linkin uudessa valilehdessa. Tyonantaja tallentaa tapahtuman itse ja hakija saa kutsun kalenterin kautta.</td>
+          </tr>
+          <tr>
+            <td>Y-tunnus-vahvistusta ei tarkisteta muilla vastaavilla alustoilla</td>
+            <td>Y-tunnuksen tarkistussumma validoidaan asiakaspuolella. Suomalaisille Y-tunnuksille haetaan yrityksen nimi suoraan PRH:n avoimesta REST-API:sta (avoindata.prh.fi).</td>
+          </tr>
+          <tr>
+            <td>Monikielisille opiskelijoille puuttuu suomenkielinen alusta</td>
+            <td>Taysi i18n-tuki kolmelle kielelle — kaikki tekstit kasitellaan i18n.js-jarjestelmalla</td>
+          </tr>
+          <tr>
+            <td>Opiskelija ei loyda kiinnostavaa ilmoitusta myohemmin uudelleen</td>
+            <td>Suosikki-toiminto: opiskelija tallentaa ilmoituksen sydankuvakkeella. Tallennetut nakyy omassa Favorites-valilehdessa profiilissa.</td>
+          </tr>
+          <tr>
+            <td>Opiskelijoilla ei ole tapaa antaa palautetta harjoittelupaikasta</td>
+            <td>Harjoittelukokemuksen jakaminen feedback-lomakkeella. Admin voi katsoa, muokata ja poistaa palautteita omassa paneelissaan.</td>
+          </tr>
+          <tr>
+            <td>Opiskelijalla ei ole kontrollia omaan tietoonsa (tietosuoja)</td>
+            <td>GDPR Art.&nbsp;17: opiskelija poistaa tilinsä kokonaan yhdella painikkeella — profiilikuva, CV, hakemukset ja pyynnot poistetaan tietokannasta ja Storagesta.</td>
+          </tr>
+          <tr>
+            <td>Tyonantaja ei tiedä uusista hakemuksista ilman jatkuvaa kirjautumista</td>
+            <td>EmailJS lahettaa automaattisen ilmoituksen tyonantajan sahkopostiin aina kun uusi hakemus saapuu (<em>template_new_application</em>).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Key features -->
+    <div class="section">
+      <div class="section-title">Tarkeimmat toiminnot</div>
+      <div class="features-grid">
+
+        <div class="feature-card fc-student">
+          <div class="feature-card-title">Opiskelija-profiili</div>
+          <div class="feature-card-body">
+            CV-lataus (PDF), koulutushistoria, harjoittelupyynnot aikavaleineen, halutut kategoriat, linkit. Profiili jaetaan tyonantajalle hakemuksen yhteydessa.
+          </div>
+        </div>
+
+        <div class="feature-card fc-company">
+          <div class="feature-card-title">Yritys-profiili</div>
+          <div class="feature-card-body">
+            Logon lataus, tiimin hallinta, Y-tunnus-vahvistus PRH:sta, ilmoitusten luonti ja muokkaus, hakemusten kasittely. Opiskelijan profiili nakyy suoraan hakemuksesta.
+          </div>
+        </div>
+
+        <div class="feature-card fc-listing">
+          <div class="feature-card-title">Ilmoitusjarjestelma</div>
+          <div class="feature-card-body">
+            Aktiiviset, luonnos- ja suljetut ilmoitukset. Kategoriat, palkka (vapaa teksti), alkamis- ja paattymispaiva tai avoin toistaiseksi. Luettelonakyma suodattimilla.
+          </div>
+        </div>
+
+        <div class="feature-card fc-interview">
+          <div class="feature-card-title">Haastattelu-integraatio</div>
+          <div class="feature-card-body">
+            Tyonantaja valitsee haastatteluajan suoraan hakemuksesta. Tila paivittyy <em>interview_scheduled</em>-tilaan Supabasessa ja sovellus avaa esitaytetyn Google Calendar -linkin, jossa hakija on valmiiksi vieraana. Tyonantaja vahvistaa tapahtuman kalenterissa.
+          </div>
+        </div>
+
+        <div class="feature-card fc-admin">
+          <div class="feature-card-title">Admin-paneeli</div>
+          <div class="feature-card-body">
+            Kayttajien ja roolien hallinta, ilmoitusten poistaminen, tilastot (kayttajat, opiskelijat, tyonantajat, hakemukset, ilmoitukset, viestit, palautteet), yhteydenottoviestilaatikko seka palauteosio (katselu, muokkaus, poisto).
+          </div>
+        </div>
+
+        <div class="feature-card fc-gdpr">
+          <div class="feature-card-title">GDPR-tietosuoja</div>
+          <div class="feature-card-body">
+            Opiskelija poistaa tilinsä kokonaan (Art.&nbsp;17): kuva, CV, hakemukset ja pyynnot poistetaan tietokannasta ja Storagesta.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Technical architecture -->
+    <div class="section">
+      <div class="section-title">Tekninen arkkitehtuuri</div>
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th style="width:18%">Kerros</th>
+            <th style="width:28%">Teknologia</th>
+            <th>Kayttokohteet</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Frontend</td>
+            <td><span class="tech-badge">HTML5</span> <span class="tech-badge">CSS3</span> <span class="tech-badge">Vanilla JS</span></td>
+            <td>Sivurakenne, responsiivisuus, i18n-jarjestelma, logiikka</td>
+          </tr>
+          <tr>
+            <td>Tietokanta</td>
+            <td><span class="tech-badge">Supabase (PostgreSQL)</span></td>
+            <td>Users, Companies, positions, applications, favorites, profiles, feedbacks</td>
+          </tr>
+          <tr>
+            <td>Autentikaatio</td>
+            <td><span class="tech-badge">Supabase Auth</span> <span class="tech-badge">bcrypt.js</span></td>
+            <td>Email/password, OAuth (Google / GitHub / LinkedIn), rooliohjaus. Salasana hashataan bcryptilla asiakaspuolella (salt rounds = 10).</td>
+          </tr>
+          <tr>
+            <td>Tiedostot</td>
+            <td><span class="tech-badge">Supabase Storage</span></td>
+            <td>Profiilikuvat (foto-bucket), CV-tiedostot (practice-files)</td>
+          </tr>
+          <tr>
+            <td>Sahkoposti</td>
+            <td><span class="tech-badge">EmailJS</span></td>
+            <td>
+              Uuden hakemuksen ilmoitus tyonantajalle (<em>template_new_application</em>) seka yhteydenottolomakkeen kopion lahettaminen (<em>template_vq3sxru</em>).
+              <br><small style="color:#6b7280;">Haastattelukutsu kulkee Google Calendar -vieraana, ei EmailJS:n kautta.</small>
+            </td>
+          </tr>
+          <tr>
+            <td>Ulkoiset API:t</td>
+            <td><span class="tech-badge">PRH</span> <span class="tech-badge">Digitransit</span></td>
+            <td>Y-tunnus-validointi (suora selainpyynto, avoindata.prh.fi/opendata-ytj-api/v3); kaupunkisuositukset lomakkeissa (api.digitransit.fi/geocoding/v1)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /content -->
+  <div class="footer">InternHub — Apache 2.0 &nbsp;|&nbsp; Maryna Yehereva · Inna Likhacheva · Liliia Petruk · 2026</div>
+</div><!-- /page 1 -->
+
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 2
+═══════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="header" style="padding: 22px 40px 18px;">
+    <div style="font-size:18px; font-weight:700; opacity:0.9;">InternHub — Tekninen katsaus (jatkuu)</div>
+  </div>
+
+  <div class="content">
+
+    <!-- User roles -->
+    <div class="section">
+      <div class="section-title">Kayttajaroolit</div>
+      <div class="roles-grid">
+
+        <div class="role-card rc-student">
+          <div class="role-card-title">Opiskelija (role = 1)</div>
+          <ul>
+            <li>Rekisteroityy koulutustasonsa mukaan</li>
+            <li>Selaa ja suodattaa ilmoituksia</li>
+            <li>Hakee paikkaan (CV + saatekirje)</li>
+            <li>Seuraa hakemusten tilaa reaaliajassa</li>
+            <li>Tallentaa suosikit</li>
+            <li>Lisaa harjoittelupyynnot</li>
+            <li>Jakaa harjoittelukokemuksen (feedback)</li>
+            <li>Kirjautuu myos Googlella / GitHubilla / LinkedInilla</li>
+          </ul>
+        </div>
+
+        <div class="role-card rc-company">
+          <div class="role-card-title">Tyonantaja (role = 2)</div>
+          <ul>
+            <li>Rekisteroityy Y-tunnuksella (tai muun maan rek.numerolla)</li>
+            <li>Luo ja hallinnoi ilmoituksia (aktiivinen / luonnos / suljettu)</li>
+            <li>Kasittelee hakemukset ja paivittaa tiloja</li>
+            <li>Aikatauluttaa haastattelun (Google Calendar -linkki)</li>
+            <li>Hallinnoi yrityksen tiimia</li>
+            <li>Katsoo opiskelijan profiilin ja lataa CV:n</li>
+          </ul>
+        </div>
+
+        <div class="role-card rc-admin">
+          <div class="role-card-title">Admin (role = 0)</div>
+          <ul>
+            <li>Kaikkien kayttajien hallinta ja poisto</li>
+            <li>Roolien vaihtaminen (student / company / admin)</li>
+            <li>Ilmoitusten poistaminen</li>
+            <li>Yhteydenottoviestilaatikko (katselu / poisto)</li>
+            <li>Reaaliaikaiset tilastot (7 mittaria)</li>
+            <li>Palauteosio: katselu, muokkaus ja poisto</li>
+            <li>Kirjautuu sahkopostilla</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Interesting technical solutions -->
+    <div class="section">
+      <div class="section-title">Mielenkiintoinen tekninen ratkaisu</div>
+      <table class="solutions-table">
+        <thead>
+          <tr>
+            <th>Haaste</th>
+            <th>Ratkaisu</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Roolipohjainen rekisterointi ilman backendia</th>
+            <td>Supabase Auth <em>user_metadata</em> tallentaa roolin, nimen ja Y-tunnuksen. <em>verify-email.html</em> lukee metatiedon vahvistuksessa ja luo oikean profiilin (<em>student_profiles</em> tai <em>Companies</em>).</td>
+          </tr>
+          <tr>
+            <th>OAuth-kayttajien yhdistaminen omaan Users-tauluun</th>
+            <td><em>onAuthStateChange</em>-kuuntelija tunnistaa uuden OAuth-kirjautumisen ja tarkistaa onko email jo Users-taulussa. Rooliohjaus toimii saman logiikan avulla.</td>
+          </tr>
+          <tr>
+            <th>PRH Y-tunnus -integraatio</th>
+            <td>
+              Tarkistussumma validoidaan asiakaspuolella ennen API-kutsua. Suomalaisille Y-tunnuksille tehdaan suora <em>fetch</em>-pyynto PRH:n avoimeen REST-API:hin (<em>avoindata.prh.fi/opendata-ytj-api/v3</em>) — CORS-ongelmat eivat esiinny uudessa v3-paatepisteessa. Debounce-viive on <strong>800&nbsp;ms</strong>. Jos API ei vastaa, checksum-validointi riittaa rekisteroitymiseen.
+            </td>
+          </tr>
+          <tr>
+            <th>Haastattelu-aikataulutus ilman kalenteriAPI:a</th>
+            <td>
+              Kun tyonantaja vahvistaa haastatteluajan, <em>interview_date</em> tallennetaan Supabaseen ja tila paivittyy <em>interview_scheduled</em>-tilaan. Sovellus muodostaa Google Calendar URL:in (<em>calendar.google.com/calendar/render?action=TEMPLATE&amp;…&amp;add=hakija@email</em>) ja avaa sen uudessa valilehdessa — hakija on valmiiksi vieraana. Integrointiin ei tarvita OAuth-laajuuksia eika Calendar API -avaimia.
+            </td>
+          </tr>
+          <tr>
+            <th>Monimainen rekisterointi (ei vain Finland)</th>
+            <td>
+              Yritysten rekisterointilomake tukee 7 maata (FI, EE, SE, NO, DE, LV, LT) ja vapaamuotoista rekisterinumeroa muille. Maakohtainen validointi (regex + automaattinen viiva) on toteutettu <em>BUSINESS_ID_CONFIG</em>-objektilla <em>auth-page.js</em>:ssa.
+            </td>
+          </tr>
+          <tr>
+            <th>Kaupunkisuositukset (Digitransit)</th>
+            <td>
+              <em>handleCityInput()</em> hakee reaaliaikaisia kaupunkiehdotuksia Digitransit-geokoodaus-API:sta (<em>api.digitransit.fi/geocoding/v1/autocomplete</em>). Kayttaa <em>locality</em>- ja <em>localadmin</em>-tasoja, deduplikoi Set:lla. Pyynto lahetetaan vasta 1+ merkin jalkeen.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Deployment -->
+    <div class="section">
+      <div class="section-title">Julkaisu ja ymparisto</div>
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th style="width:22%">Asia</th>
+            <th>Tiedot</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Live-osoite</td>
+            <td><a href="https://internhub-lac.vercel.app" style="color:#5a669d;">internhub-lac.vercel.app</a> (Vercel, staattinen sivusto — ei build-vaihetta)</td>
+          </tr>
+          <tr>
+            <td>Repository</td>
+            <td>github.com/marina-390/Internship-Search-App-Project</td>
+          </tr>
+          <tr>
+            <td>Tietokanta</td>
+            <td>Supabase cloud PostgreSQL — 13 taulua, kaikki RLS-suojattu</td>
+          </tr>
+          <tr>
+            <td>Lisensi</td>
+            <td>Apache 2.0 — Copyright 2026: Maryna Yehereva, Inna Likhacheva, Liliia Petruk</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /content -->
+  <div class="footer">InternHub — Apache 2.0 &nbsp;|&nbsp; Maryna Yehereva · Inna Likhacheva · Liliia Petruk · 2026</div>
+</div><!-- /page 2 -->
+
+</body>
+</html>
