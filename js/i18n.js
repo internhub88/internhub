@@ -236,7 +236,7 @@ const TRANSLATIONS = {
         helpText: "Have questions or feedback? We're here to help!",
         nameLabel: 'Full Name', emailLabel: 'Email', subjectLabel: 'Subject', msgLabel: 'Message', btnSend: 'Send Message',
         contactInfo: 'Contact Information', addressH: '📍 Address', emailH: '📧 Email', phoneH: '📞 Phone', hoursH: '⏰ Business Hours',
-        hoursV: 'Monday - Friday: 9:00 AM - 6:00 PM PST<br>Saturday - Sunday: Closed'
+        hoursV: '24/7'
       },
       careerResources: {
         title: 'Career Resources', subtitle: 'Everything you need to succeed in your internship journey',
@@ -742,7 +742,7 @@ const TRANSLATIONS = {
         helpText: 'Onko sinulla kysymyksiä tai palautetta? Olemme täällä auttamassa!',
         nameLabel: 'Koko nimi', emailLabel: 'Sähköposti', subjectLabel: 'Aihe', msgLabel: 'Viesti', btnSend: 'Lähetä viesti',
         contactInfo: 'Yhteystiedot', addressH: '📍 Osoite', emailH: '📧 Sähköposti', phoneH: '📞 Puhelin', hoursH: '⏰ Aukioloajat',
-        hoursV: 'Maanantai – Perjantai: 9:00 – 18:00<br>Lauantai – Sunnuntai: Suljettu'
+        hoursV: '24/7'
       },
       careerResources: {
         title: 'Uraresurssit', subtitle: 'Kaikki mitä tarvitset menestyäksesi harjoittelumatkallasi',
@@ -1243,7 +1243,7 @@ const TRANSLATIONS = {
         helpText: 'Har du frågor eller feedback? Vi är här för att hjälpa!',
         nameLabel: 'Fullständigt namn', emailLabel: 'E-post', subjectLabel: 'Ämne', msgLabel: 'Meddelande', btnSend: 'Skicka meddelande',
         contactInfo: 'Kontaktinformation', addressH: '📍 Adress', emailH: '📧 E-post', phoneH: '📞 Telefon', hoursH: '⏰ Öppettider',
-        hoursV: 'Måndag – Fredag: 9:00 – 18:00<br>Lördag – Söndag: Stängt'
+        hoursV: '24/7'
       },
       careerResources: {
         title: 'Karriärresurser', subtitle: 'Allt du behöver för att lyckas med din praktikresa',

@@ -646,22 +646,19 @@ function toggleEditCategoryPanel() {
 }
 
 
-function toggleGroupExpand(id) {
+function toggleGroupExpand(id, arrowButton = null) {
   const el = document.getElementById(id);
   if (!el) return;
   const isOpen = el.style.display === 'block';
   el.style.display = isOpen ? 'none' : 'block';
 
-  // Try arrow by matching ID convention: group-cats-X → group-arrow-X
-  const arrowId = id.replace('group-cats-', 'group-arrow-');
-  const arrowBtn = document.getElementById(arrowId);
-  if (arrowBtn) {
-    arrowBtn.textContent = isOpen ? '▶' : '▼';
-  } else {
-    // Fallback for populateCategoryGroupList panels (editCategoryGroupList_X etc.)
-    const btn = el.previousElementSibling?.querySelector('button');
-    if (btn) btn.textContent = isOpen ? '▶' : '▼';
+  if (arrowButton) {
+    arrowButton.textContent = isOpen ? '▶' : '▼';
+    return;
   }
+
+  const btn = el.previousElementSibling?.querySelector('button');
+  if (btn) btn.textContent = isOpen ? '▶' : '▼';
 }
 
 function selectEditCategory(value, label) {
@@ -738,8 +735,7 @@ async function populateCategoryGroupList(listId, onSelect) {
     listEl.innerHTML = groups.map(group => `
       <div style="margin-bottom:0.2rem; border:1px solid #f0f0f0; border-radius:6px; overflow:hidden;">
         <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa;">
-          <div onclick="(${onSelect.name || 'arguments.callee'})('group:${group.group_id}', '${group.title}')"
-               data-onselect-group="${group.group_id}" data-onselect-label="${group.title}"
+          <div data-onselect-group="${group.group_id}" data-onselect-label="${group.title}"
                style="flex:1; padding:0.55rem 0.75rem; cursor:pointer; font-weight:600;
                       font-size:0.875rem; color:#374151;">
             ${group.title}
@@ -747,7 +743,7 @@ async function populateCategoryGroupList(listId, onSelect) {
               (${group.job_categories?.length || 0})
             </span>
           </div>
-          <button onclick="toggleGroupExpand('${listId}_${group.group_id}')"
+          <button type="button" data-toggle-target="${listId}_${group.group_id}"
                   style="background:none; border:none; cursor:pointer; padding:0.55rem 0.75rem;
                          color:#9ca3af; font-size:0.8rem;">▶</button>
         </div>
@@ -771,6 +767,12 @@ async function populateCategoryGroupList(listId, onSelect) {
     listEl.querySelectorAll('[data-onselect-cat]').forEach(el => {
       el.addEventListener('click', () =>
         onSelect('cat:' + el.dataset.onselectCat, el.dataset.onselectLabel));
+    });
+    listEl.querySelectorAll('[data-toggle-target]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.toggleTarget;
+        if (targetId) toggleGroupExpand(targetId, btn);
+      });
     });
 
   } catch (err) {
